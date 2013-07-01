@@ -4,17 +4,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <!--
+    
     <parameters>
-        <parameter key="wsh_lapi.example.class">Wsh\LapiBundle\Example</parameter>
+        <parameter key="wsh_lapi.content.class">Wsh\LapiBundle\Controller\ContentController</parameter>
     </parameters>
 
     <services>
-        <service id="wsh_lapi.example" class="%wsh_lapi.example.class%">
-            <argument type="service" id="service_id" />
-            <argument>plain_value</argument>
-            <argument>%parameter_name%</argument>
+        <service id="wsh_lapi.content" class="%wsh_lapi.content.class%">
+            <!--<argument type="service" id="service_id" />-->
         </service>
     </services>
-    -->
+    
 </container>
