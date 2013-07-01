@@ -31,7 +31,7 @@ class User
     /**
      * @var string
      *
-     * @ORM\Column(name="facebookId", type="string", length=255)
+     * @ORM\Column(name="facebookId", type="string", length=255, nullable=true)
      */
     private $facebookId;
 
@@ -45,16 +45,29 @@ class User
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="lastActive", type="datetime")
+     * @ORM\Column(name="lastActive", type="datetime", nullable=true)
      */
     private $lastActive;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="applePushToken", type="string", length=255)
+     * @ORM\Column(name="applePushToken", type="string", length=255, nullable=true)
      */
     private $applePushToken;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean")
+     */
+    private $sendHotDealsAlert;
+
+    public function __construct()
+    {
+        $this->created = new \DateTime();
+        $this->sendHotDealsAlert = true;
+    }
 
 
     /**
@@ -181,4 +194,37 @@ class User
     {
         return $this->applePushToken;
     }
+
+    /**
+     * @param boolean $sendHodDealsAlert
+     */
+    public function setSendHotDealsAlert($sendHodDealsAlert)
+    {
+        $this->sendHotDealsAlert = $sendHodDealsAlert;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getSendHotDealsAlert()
+    {
+        return $this->sendHotDealsAlert;
+    }
+
+    /**
+     * Enables hot deals alert for this user
+     */
+    public function enableHotDeals()
+    {
+        $this->setSendHotDealsAlert(true);
+    }
+
+    /**
+     * Disables hot deals for this user
+     */
+    public function disableHotDeals()
+    {
+        $this->setSendHotDealsAlert(false);
+    }
+
 }
