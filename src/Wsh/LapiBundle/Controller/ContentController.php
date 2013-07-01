@@ -16,4 +16,20 @@ class ContentController extends Controller
     {
         return array('name' => $name);
     }
+
+    /**
+     * Returns array of offer objects marked as featured
+     */
+    public function getFeaturedAction()
+    {
+
+    }
+
+    /**
+     * Returns array of offer objects marked as hot deals
+     */
+    public function getHotDeals()
+    {
+
+    }
 }

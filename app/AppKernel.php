@@ -18,6 +18,7 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new Wsh\LapiBundle\WshLapiBundle(),
+            new Wa72\JsonRpcBundle\Wa72JsonRpcBundle()
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

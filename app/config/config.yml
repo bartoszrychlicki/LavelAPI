@@ -63,3 +63,15 @@ swiftmailer:
     username:  %mailer_user%
     password:  %mailer_password%
     spool:     { type: memory }
+
+wa72_json_rpc:
+    functions:
+        get_hot_deals:
+            service: "wsh_lapi.content"
+            method: "getHotDeals"
+        get_featured:
+            service: "wsh_lapi.content"
+            method: "getFeatured"
+        testhello:
+            service: "wa72_jsonrpc.testservice"
+            method: "hello"
