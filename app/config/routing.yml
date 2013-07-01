@@ -1,0 +1,5 @@
+wsh_lapi:
+    resource: "@WshLapiBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
