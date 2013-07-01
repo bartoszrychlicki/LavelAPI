@@ -77,6 +77,9 @@ wa72_json_rpc:
         register_device:
             service: "wsh_lapi.users"
             method: "registerDevice"
+        unregister_device:
+            service: "wsh_lapi.users"
+            method: "unRegisterDevice"
         testhello:
             service: "wa72_jsonrpc.testservice"
             method: "hello"

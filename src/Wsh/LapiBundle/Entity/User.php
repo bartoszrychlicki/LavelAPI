@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\UserRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class User
 {
@@ -55,6 +56,13 @@ class User
      * @ORM\Column(name="applePushToken", type="string", length=255, nullable=true)
      */
     private $applePushToken;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     */
+    private $securityToken;
 
     /**
      * @var boolean
@@ -227,4 +235,43 @@ class User
         $this->setSendHotDealsAlert(false);
     }
 
+    /**
+     * @param string $securityToken
+     */
+    public function setSecurityToken($securityToken)
+    {
+        $this->securityToken = $securityToken;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSecurityToken()
+    {
+        return $this->securityToken;
+    }
+
+    /**
+     * Returns string for security token based on AppIdToken
+     */
+    public function createSecurityToken()
+    {
+        if(!$this->getAppId()) {
+            throw new \Exception(
+                'No appId given for user object thus no security token can be created. Set appId on object first')
+            ;
+        }
+        // todo: change method of generating token
+        $salt = 'WeiserDawidek';
+        $token = substr(sha1($this->getAppId().$salt), 0, 12);
+        return $token;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->setSecurityToken($this->createSecurityToken());
+    }
 }

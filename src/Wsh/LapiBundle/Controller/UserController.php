@@ -48,10 +48,33 @@ class UserController extends Controller
 
     /**
      * Removes user from database so he's token will no longer be authenticated
+     *
      * @param $appIdToken
+     * @param $securityToken
+     * @return string
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function unRegisterDevice($appIdToken)
+    public function unRegisterDevice($appIdToken, $securityToken)
     {
+        // first let see if user not allready registered
+        $em = $this->getDoctrine()->getManager();
+        $repo = $em->getRepository('WshLapiBundle:User');
+        $user = $repo->findOneByAppId($appIdToken);
+        if(!$user) {
+            throw $this->createNotFoundException('No user with appIdToken: '.$appIdToken.' has been found');
+        }
+        // check security token
+        $this->checkSecurityToken($user, $securityToken);
 
+        $em->remove($user);
+        $em->flush();
+        return "OK";
+    }
+
+    private function checkSecurityToken(User $user, $token)
+    {
+        if($user->getSecurityToken() != $token) {
+            throw new \Exception('Request not authorized. Tokens does not match');
+        }
     }
 }
