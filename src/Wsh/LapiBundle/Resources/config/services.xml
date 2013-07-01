@@ -7,14 +7,18 @@
     
     <parameters>
         <parameter key="wsh_lapi.content.class">Wsh\LapiBundle\Controller\ContentController</parameter>
-        <parameter key="wsh_lapi.user.class">Wsh\LapiBundle\Controller\UserController</parameter>
+        <parameter key="wsh_lapi.users.class">Wsh\LapiBundle\Controller\UserController</parameter>
+        <parameter key="wsh_lapi.alerts.class">Wsh\LapiBundle\Controller\AlertController</parameter>
     </parameters>
 
     <services>
         <service id="wsh_lapi.content" class="%wsh_lapi.content.class%">
-            <!--<argument type="service" id="service_id" />-->
+            <argument type="service" id="service_container"/>
         </service>
-        <service id="wsh_lapi.users" class="%wsh_lapi.user.class%">
+        <service id="wsh_lapi.users" class="%wsh_lapi.users.class%">
+            <argument type="service" id="service_container"/>
+        </service>
+        <service id="wsh_lapi.alerts" class="%wsh_lapi.alerts.class%">
             <argument type="service" id="service_container"/>
         </service>
     </services>

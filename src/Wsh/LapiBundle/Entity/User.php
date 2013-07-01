@@ -2,6 +2,7 @@
 
 namespace Wsh\LapiBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -65,6 +66,12 @@ class User
     private $securityToken;
 
     /**
+     * @var \Doctrine\Common\Collections\ArrayCollection
+     * @ORM\OneToMany(targetEntity="Wsh\LapiBundle\Entity\Alert", mappedBy="user")
+     */
+    private $alerts;
+
+    /**
      * @var boolean
      *
      * @ORM\Column(type="boolean")
@@ -75,6 +82,7 @@ class User
     {
         $this->created = new \DateTime();
         $this->sendHotDealsAlert = true;
+        $this->alerts = new ArrayCollection();
     }
 
 
@@ -273,5 +281,26 @@ class User
     public function prePersist()
     {
         $this->setSecurityToken($this->createSecurityToken());
+    }
+
+    /**
+     * @param \Doctrine\Common\Collections\ArrayCollection $alerts
+     */
+    public function setAlerts($alerts)
+    {
+        $this->alerts = $alerts;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getAlerts()
+    {
+        return $this->alerts;
+    }
+
+    public function addAlert(Alert $alert)
+    {
+        $this->alerts->add($alert);
     }
 }
