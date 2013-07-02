@@ -39,7 +39,7 @@ class Alert
      *
      * @ORM\Column(name="searchQueryParams", type="object")
      * @Expose
-     * @Type("stdClass")
+     * @Type("array")
      */
     private $searchQueryParams;
 
