@@ -1,8 +1,3 @@
-wsh_lapi:
-    resource: "@WshLapiBundle/Controller/"
-    type:     annotation
-    prefix:   /
-
 wa72_json_rpc:
     resource: "@Wa72JsonRpcBundle/Resources/config/routing.yml"
     prefix:   /jsonrpc

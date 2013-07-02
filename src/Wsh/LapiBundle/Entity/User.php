@@ -303,4 +303,9 @@ class User
     {
         $this->alerts->add($alert);
     }
+
+    public function checkSecurityToken($token)
+    {
+        return $this->getSecurityToken() == $token;
+    }
 }

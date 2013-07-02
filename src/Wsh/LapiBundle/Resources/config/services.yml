@@ -1,3 +1,0 @@
-services:
-  wsh.lapi.content:
-  	class: "Wsh\LapiBundle\Controller\ContentController"

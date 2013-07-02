@@ -3,12 +3,16 @@
 namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Exclude;
+
 
 /**
  * Alert
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\AlertRepository")
+ * @ExclusionPolicy("none")
  */
 class Alert
 {
@@ -31,7 +35,8 @@ class Alert
     /**
      * @var array
      *
-     * @ORM\Column(name="searchQueryParams", type="array")
+     * @ORM\Column(name="searchQueryParams", type="object")
+     *
      */
     private $searchQueryParams;
 
@@ -45,7 +50,8 @@ class Alert
     /**
      * @var \Wsh\LapiBundle\Entity\User
      *
-     * @ORM\ManyToOne(targetEntity="Wsh\LapiBundle\Entity\Alert", inversedBy="alerts")
+     * @ORM\ManyToOne(targetEntity="Wsh\LapiBundle\Entity\User", inversedBy="alerts")
+     * @Exclude
      */
     private $user;
 

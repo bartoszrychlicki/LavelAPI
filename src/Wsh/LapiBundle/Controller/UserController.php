@@ -17,9 +17,9 @@ use Wsh\LapiBundle\Entity\User;
  */
 class UserController extends Controller
 {
-    protected  $container;
+    protected $container;
 
-    function __construct(Container $container)
+    public function __construct(Container $container)
     {
         $this->container = $container;
     }
@@ -56,6 +56,16 @@ class UserController extends Controller
      */
     public function unRegisterDevice($appIdToken, $securityToken)
     {
+        $user = $this->getAppUser($appIdToken, $securityToken);
+        $em = $this->getDoctrine()->getManager();
+
+        $em->remove($user);
+        $em->flush();
+        return "OK";
+    }
+
+    public function getAppUser($appIdToken, $securityToken)
+    {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
         $repo = $em->getRepository('WshLapiBundle:User');
@@ -64,17 +74,9 @@ class UserController extends Controller
             throw $this->createNotFoundException('No user with appIdToken: '.$appIdToken.' has been found');
         }
         // check security token
-        $this->checkSecurityToken($user, $securityToken);
-
-        $em->remove($user);
-        $em->flush();
-        return "OK";
-    }
-
-    private function checkSecurityToken(User $user, $token)
-    {
-        if($user->getSecurityToken() != $token) {
+        if(!$user->checkSecurityToken($securityToken)) {
             throw new \Exception('Request not authorized. Tokens does not match');
         }
+        return $user;
     }
 }

@@ -80,6 +80,12 @@ wa72_json_rpc:
         unregister_device:
             service: "wsh_lapi.users"
             method: "unRegisterDevice"
+        post_alert:
+            service: "wsh_lapi.alerts"
+            method: "postAlert"
+        delete_alert:
+            service: "wsh_lapi.alerts"
+            method: "deleteAlert"
         testhello:
             service: "wa72_jsonrpc.testservice"
             method: "hello"
