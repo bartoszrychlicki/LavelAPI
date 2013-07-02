@@ -5,6 +5,8 @@ namespace Wsh\LapiBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Exclude;
+use JMS\Serializer\Annotation\Expose;
+use JMS\Serializer\Annotation\Type;
 
 
 /**
@@ -33,10 +35,11 @@ class Alert
     private $newOffersCount;
 
     /**
-     * @var array
+     * @var stdObject
      *
      * @ORM\Column(name="searchQueryParams", type="object")
-     *
+     * @Expose
+     * @Type("stdClass")
      */
     private $searchQueryParams;
 

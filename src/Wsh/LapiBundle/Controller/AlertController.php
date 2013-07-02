@@ -61,7 +61,37 @@ class AlertController extends Controller
         $em->flush();
 
         return "OK";
+    }
 
+    public function updateAlert($alertId, $newValues, $securityToken)
+    {
+        $em = $this->getDoctrine()->getManager();
+        //find alert
+        $alertRepo = $em->getRepository('WshLapiBundle:Alert');
+        $alert = $alertRepo->find($alertId);
+        if(!$alert) {
+            throw $this->createNotFoundException('Alert with ID '.$alertId.' not found');
+        }
+        // check token
+        $appIdToken = $alert->getUser()->getAppId();
+        $userService = $this->container->get('wsh_lapi.users');
 
+        // this check token
+        $user = $userService->getAppUser($appIdToken, $securityToken);
+
+        // now pass new values to object
+        if(count($newValues) > 0) {
+            foreach($newValues as $key => $newValues) {
+                // check if set metthod exists
+                $method = 'set'.ucfirst($key);
+                if(method_exists($alert, $method)) {
+                    $alert->$method($newValues);
+                }
+            }
+        }
+        $em->persist($alert);
+        $em->flush();
+
+        return $alert;
     }
 }

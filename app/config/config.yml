@@ -86,6 +86,9 @@ wa72_json_rpc:
         delete_alert:
             service: "wsh_lapi.alerts"
             method: "deleteAlert"
+        update_alert:
+            service: "wsh_lapi.alerts"
+            method: "updateAlert"
         testhello:
             service: "wa72_jsonrpc.testservice"
             method: "hello"
