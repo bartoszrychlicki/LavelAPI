@@ -17,15 +17,15 @@ class AlertController extends Controller
         $this->container = $container;
     }
 
-    public function postAlert($appIdToken, $securityToken, $searchParams)
+    public function postAlert($appId, $securityToken, $searchParams)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
-        //$user = $this->container->get('wsh_lapi.users')->getUser($appIdToken, $securityToken);
         if($this->container->has('wsh_lapi.users')) {
-            // this throws FatalErrorExecption
             $userService = $this->container->get('wsh_lapi.users');
-            $user = $userService->getAppUser($appIdToken, $securityToken);
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new Exception('No wsh_lapi.users service registered');
         }
         // check if that alert does not exist allready
         $alertRepo = $em->getRepository('WshLapiBundle:Alert');
