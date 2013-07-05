@@ -29,7 +29,7 @@ class UserController extends Controller
      * @param $appIdToken unique user token generated in client app
      * @return User
      */
-    public function registerDevice($appIdToken)
+    public function registerDevice($appIdToken, $securityToken)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
@@ -39,6 +39,11 @@ class UserController extends Controller
             // user not found create new one
             $user = new User();
             $user->setAppId($appIdToken);
+            // now we can see if generate securityToken is the same as the one we will generate
+            if(!$user->checkSecurityToken($securityToken, $this->container->getParameter('secret'))) {
+                throw new \Exception('Request not authorized. Tokens does not match');
+            }
+
             $em->persist($user);
             $em->flush();
         }
@@ -70,11 +75,12 @@ class UserController extends Controller
         $em = $this->getDoctrine()->getManager();
         $repo = $em->getRepository('WshLapiBundle:User');
         $user = $repo->findOneByAppId($appIdToken);
+        $salt = $this->container->getParameter('secret');
         if(!$user) {
             throw $this->createNotFoundException('No user with appIdToken: '.$appIdToken.' has been found');
         }
         // check security token
-        if(!$user->checkSecurityToken($securityToken)) {
+        if(!$user->checkSecurityToken($securityToken, $salt)) {
             throw new \Exception('Request not authorized. Tokens does not match');
         }
         return $user;

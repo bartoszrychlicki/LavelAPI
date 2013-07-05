@@ -4,6 +4,9 @@ namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * App user, identified by appId generated in client app
@@ -20,6 +23,7 @@ class User
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
      */
     private $id;
 
@@ -27,6 +31,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="appId", type="string", length=255)
+     * @Exclude
      */
     private $appId;
 
@@ -59,15 +64,9 @@ class User
     private $applePushToken;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     */
-    private $securityToken;
-
-    /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      * @ORM\OneToMany(targetEntity="Wsh\LapiBundle\Entity\Alert", mappedBy="user")
+     * @Exclude
      */
     private $alerts;
 
@@ -244,25 +243,9 @@ class User
     }
 
     /**
-     * @param string $securityToken
-     */
-    public function setSecurityToken($securityToken)
-    {
-        $this->securityToken = $securityToken;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSecurityToken()
-    {
-        return $this->securityToken;
-    }
-
-    /**
      * Returns string for security token based on AppIdToken
      */
-    public function createSecurityToken()
+    private function createSecurityToken($salt)
     {
         if(!$this->getAppId()) {
             throw new \Exception(
@@ -270,8 +253,7 @@ class User
             ;
         }
         // todo: change method of generating token
-        $salt = 'WeiserDawidek';
-        $token = substr(sha1($this->getAppId().$salt), 0, 12);
+        $token = substr(sha1($this->getAppId().$salt), 5, 22);
         return $token;
     }
 
@@ -304,8 +286,8 @@ class User
         $this->alerts->add($alert);
     }
 
-    public function checkSecurityToken($token)
+    public function checkSecurityToken($token, $salt)
     {
-        return $this->getSecurityToken() == $token;
+        return $this->createSecurityToken($salt) == $token;
     }
 }
