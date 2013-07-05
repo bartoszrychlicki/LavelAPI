@@ -8,6 +8,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\DependencyInjection\Container;
 use Wsh\LapiBundle\Entity\User;
 
+
 /**
  * Class UserController
  *
@@ -29,24 +30,28 @@ class UserController extends Controller
      * @param $appIdToken unique user token generated in client app
      * @return User
      */
-    public function registerDevice($appIdToken, $securityToken)
+    public function registerDevice($appId, $securityToken)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
-        $repo = $em->getRepository('WshLapiBundle:User');
-        $user = $repo->findOneByAppId($appIdToken);
-        if(!$user) {
-            // user not found create new one
-            $user = new User();
-            $user->setAppId($appIdToken);
-            // now we can see if generate securityToken is the same as the one we will generate
-            if(!$user->checkSecurityToken($securityToken, $this->container->getParameter('secret'))) {
-                throw new \Exception('Request not authorized. Tokens does not match');
-            }
+        $validator = $this->container->get('validator');
 
-            $em->persist($user);
-            $em->flush();
+        $user = new User();
+        $user->setAppId($appId);
+        // now we can see if generate securityToken is the same as the one we will generate
+        if(!$user->checkSecurityToken($securityToken, $this->container->getParameter('secret'))) {
+            throw new \Exception('Request not authorized. Tokens does not match');
         }
+        // lets validate user
+        $errors = $validator->validate($user);
+        if (count($errors) > 0) {
+            return $errors;
+        } else {
+            // if no errors go ahead and save user
+        }
+        $em->persist($user);
+        $em->flush();
+
         return $user;
 
     }
@@ -59,9 +64,9 @@ class UserController extends Controller
      * @return string
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function unRegisterDevice($appIdToken, $securityToken)
+    public function unRegisterDevice($appId, $securityToken)
     {
-        $user = $this->getAppUser($appIdToken, $securityToken);
+        $user = $this->getAppUser($appId, $securityToken);
         $em = $this->getDoctrine()->getManager();
 
         $em->remove($user);
@@ -69,15 +74,15 @@ class UserController extends Controller
         return "OK";
     }
 
-    public function getAppUser($appIdToken, $securityToken)
+    public function getAppUser($appId, $securityToken)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
         $repo = $em->getRepository('WshLapiBundle:User');
-        $user = $repo->findOneByAppId($appIdToken);
+        $user = $repo->findOneByAppId($appId);
         $salt = $this->container->getParameter('secret');
         if(!$user) {
-            throw $this->createNotFoundException('No user with appIdToken: '.$appIdToken.' has been found');
+            throw $this->createNotFoundException('No user with AppId: '.$appId.' has been found');
         }
         // check security token
         if(!$user->checkSecurityToken($securityToken, $salt)) {

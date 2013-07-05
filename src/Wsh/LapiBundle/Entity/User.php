@@ -5,8 +5,10 @@ namespace Wsh\LapiBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\ExclusionPolicy;
-use JMS\Serializer\Annotation\Expose;
 use JMS\Serializer\Annotation\Exclude;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 
 /**
  * App user, identified by appId generated in client app
@@ -14,6 +16,7 @@ use JMS\Serializer\Annotation\Exclude;
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\UserRepository")
  * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("appId")
  */
 class User
 {
@@ -30,8 +33,9 @@ class User
     /**
      * @var string
      *
-     * @ORM\Column(name="appId", type="string", length=255)
+     * @ORM\Column(name="appId", type="string", length=255, unique=true)
      * @Exclude
+     * @Assert\NotBlank()
      */
     private $appId;
 
@@ -46,6 +50,8 @@ class User
      * @var \DateTime
      *
      * @ORM\Column(name="created", type="datetime")
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
      */
     private $created;
 
@@ -53,6 +59,7 @@ class User
      * @var \DateTime
      *
      * @ORM\Column(name="lastActive", type="datetime", nullable=true)
+     * @Assert\DateTime()
      */
     private $lastActive;
 
@@ -74,6 +81,7 @@ class User
      * @var boolean
      *
      * @ORM\Column(type="boolean")
+     * @Assert\Type(type="bool")
      */
     private $sendHotDealsAlert;
 
@@ -262,7 +270,7 @@ class User
      */
     public function prePersist()
     {
-        $this->setSecurityToken($this->createSecurityToken());
+
     }
 
     /**
