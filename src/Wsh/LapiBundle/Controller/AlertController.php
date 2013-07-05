@@ -7,6 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\DependencyInjection\Container;
 use Wsh\LapiBundle\Entity\Alert;
+use Wsh\LapiBundle\OfferProvider\Qtravel\Provider;
 
 class AlertController extends Controller
 {
@@ -93,5 +94,34 @@ class AlertController extends Controller
         $em->flush();
 
         return $alert;
+    }
+
+    public function getAllOffersForAlert($alertId)
+    {
+        // fetches all offers that fits alert query
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
+        //get the alert
+        $em = $this->getDoctrine()->getManager();
+        $alertRepo = $em->getRepository('WshLapiBundle:Alert');
+        $alert = $alertRepo->find($alertId);
+        if(!$alert) {
+            throw $this->createNotFoundException('No alert with id: '.$alertId.' found');
+        }
+        $offers = $provider->findOffersByParams($alert->getSearchQueryParams());
+        return array(
+            'offers' => $offers,
+            'requestUrl' => $provider->getLastSentRequestUrl()
+        );
+
+    }
+
+    public function getNewOffersForAlert()
+    {
+
+    }
+
+    public function getNewOffersForAlertCount()
+    {
+
     }
 }
