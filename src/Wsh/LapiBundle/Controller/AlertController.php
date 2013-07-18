@@ -117,11 +117,16 @@ class AlertController extends Controller
 
     public function getNewOffersForAlert()
     {
-
+        //todo
     }
 
     public function getNewOffersForAlertCount()
     {
+        //todo
+    }
 
+    public function getUserAlerts($appId)
+    {
+        //todo
     }
 }
