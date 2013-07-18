@@ -89,9 +89,12 @@ wa72_json_rpc:
         update_alert:
             service: "wsh_lapi.alerts"
             method: "updateAlert"
-        get_offers_for_alert:
+        get_alerts_offer:
             service: "wsh_lapi.alerts"
             method: "getAllOffersForAlert"
+        get_user_alerts:
+            service: "wsh_lapi.alerts"
+            method: "getUserAlerts"
         testhello:
             service: "wa72_jsonrpc.testservice"
             method: "hello"

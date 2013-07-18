@@ -96,6 +96,15 @@ class AlertController extends Controller
         return $alert;
     }
 
+    /**
+     * Returns all offers for given alert.
+     *
+     * @todo this probably should be somehow paginated
+     *
+     * @param $alertId
+     * @return array
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
     public function getAllOffersForAlert($alertId)
     {
         // fetches all offers that fits alert query
@@ -115,18 +124,43 @@ class AlertController extends Controller
 
     }
 
+    /**
+     * Returns all new offers (that where not send via API before)
+     */
     public function getNewOffersForAlert()
     {
         //todo
     }
 
+
+    /**
+     * The sames as getNewOffersForAlert but returns only count
+     */
     public function getNewOffersForAlertCount()
     {
         //todo
     }
 
-    public function getUserAlerts($appId)
+    /**
+     * Returns array with user alerts
+     *
+     * @param $appId
+     * @param $securityToken
+     * @return mixed Collection of user alerts if any
+     * @throws Exception When wsh_lapi.users service not found
+     */
+    public function getUserAlerts($appId, $securityToken)
     {
-        //todo
+        // first let see if user not allready registered
+        $em = $this->getDoctrine()->getManager();
+        if($this->container->has('wsh_lapi.users')) {
+            $userService = $this->container->get('wsh_lapi.users');
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new Exception('No wsh_lapi.users service registered');
+        }
+        return $user->getAlerts();
     }
+
+    // todo: add name to alert
 }
