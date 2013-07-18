@@ -81,6 +81,15 @@ class UserController extends Controller
         return "OK";
     }
 
+    /**
+     * Finds given user in DB by appId and check if request is authorized
+     *
+     * @param $appId
+     * @param $securityToken
+     * @return mixed
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @throws \Exception
+     */
     public function getAppUser($appId, $securityToken)
     {
         // first let see if user not allready registered
@@ -96,5 +105,23 @@ class UserController extends Controller
             throw new \Exception('Request not authorized. Tokens does not match');
         }
         return $user;
+    }
+
+    public function updateUser($appId, \stdClass $newData, $securityToken)
+    {
+        $validator = $this->container->get('validator');
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->getAppUser($appId, $securityToken);
+        $user->populateFromObject($newData);
+        // lets validate user
+        $errors = $validator->validate($user);
+        if (count($errors) > 0) {
+            return $errors;
+        }
+        $em->persist($user);
+        $em->flush();
+        return $user;
+
     }
 }

@@ -58,6 +58,13 @@ class Alert
      */
     private $user;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     */
+    private $name;
+
     public function __construct()
     {
         $this->created = new \DateTime();
@@ -166,4 +173,21 @@ class Alert
     {
         return $this->user;
     }
+
+    /**
+     * @param string $name
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
 }

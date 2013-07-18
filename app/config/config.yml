@@ -70,16 +70,19 @@ wa72_json_rpc:
     functions:
         get_hot_deals:
             service: "wsh_lapi.content"
-            method: "get_hot_deals"
+            method: "getHotDeals"
         get_featured:
             service: "wsh_lapi.content"
-            method: "get_featured"
+            method: "getFeatured"
         register_device:
             service: "wsh_lapi.users"
             method: "registerDevice"
         unregister_device:
             service: "wsh_lapi.users"
             method: "unRegisterDevice"
+        update_user:
+            service: "wsh_lapi.users"
+            method: "updateUser"
         post_alert:
             service: "wsh_lapi.alerts"
             method: "postAlert"

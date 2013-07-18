@@ -152,7 +152,6 @@ class AlertController extends Controller
     public function getUserAlerts($appId, $securityToken)
     {
         // first let see if user not allready registered
-        $em = $this->getDoctrine()->getManager();
         if($this->container->has('wsh_lapi.users')) {
             $userService = $this->container->get('wsh_lapi.users');
             $user = $userService->getAppUser($appId, $securityToken);
@@ -162,5 +161,4 @@ class AlertController extends Controller
         return $user->getAlerts();
     }
 
-    // todo: add name to alert
 }

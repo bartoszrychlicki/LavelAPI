@@ -20,6 +20,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  */
 class User
 {
+    use ApiEntityTrait;
     /**
      * @var integer
      *
@@ -85,10 +86,19 @@ class User
      */
     private $sendHotDealsAlert;
 
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean")
+     * @Assert\Type(type="bool")
+     */
+    private $sendLastMinuteAlert;
+
     public function __construct()
     {
         $this->created = new \DateTime();
         $this->sendHotDealsAlert = true;
+        $this->sendLastMinuteAlert = true;
         $this->alerts = new ArrayCollection();
     }
 
@@ -155,7 +165,7 @@ class User
      * @param \DateTime $created
      * @return User
      */
-    public function setCreated($created)
+    private function setCreated($created)
     {
         $this->created = $created;
     
@@ -297,5 +307,21 @@ class User
     public function checkSecurityToken($token, $salt)
     {
         return $this->createSecurityToken($salt) == $token;
+    }
+
+    /**
+     * @param boolean $sendLastMinuteAlert
+     */
+    public function setSendLastMinuteAlert($sendLastMinuteAlert)
+    {
+        $this->sendLastMinuteAlert = $sendLastMinuteAlert;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getSendLastMinuteAlert()
+    {
+        return $this->sendLastMinuteAlert;
     }
 }
