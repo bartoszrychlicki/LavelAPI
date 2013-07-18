@@ -253,7 +253,7 @@ class User
     /**
      * Returns string for security token based on AppIdToken
      */
-    private function createSecurityToken($salt)
+    public function createSecurityToken($salt)
     {
         if(!$this->getAppId()) {
             throw new \Exception(

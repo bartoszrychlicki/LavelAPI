@@ -30,7 +30,7 @@ class UserController extends Controller
      * @param $appIdToken unique user token generated in client app
      * @return User
      */
-    public function registerDevice($appId, $securityToken)
+    public function registerDevice($appId, $developerToken)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
@@ -38,9 +38,11 @@ class UserController extends Controller
 
         $user = new User();
         $user->setAppId($appId);
-        // now we can see if generate securityToken is the same as the one we will generate
-        if(!$user->checkSecurityToken($securityToken, $this->container->getParameter('secret'))) {
-            throw new \Exception('Request not authorized. Tokens does not match');
+
+        // we must check the developer token
+
+        if($this->container->getParameter('developerToken') != $developerToken) {
+            throw new \Exception('Developer token is not correct. Request not authorized.');
         }
         // lets validate user
         $errors = $validator->validate($user);
@@ -52,7 +54,12 @@ class UserController extends Controller
         $em->persist($user);
         $em->flush();
 
-        return $user;
+        $salt = $this->container->getParameter('secret');
+
+        return array(
+            'user' => $user,
+            'securityToken' => $user->createSecurityToken($salt)
+        );
 
     }
 
