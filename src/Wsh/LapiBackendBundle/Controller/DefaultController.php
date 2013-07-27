@@ -16,7 +16,7 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         if ($request->getMethod() == 'POST') {
-            // search of given offer by
+            // search of given offerProviderSymbol by
         }
         return array();
     }

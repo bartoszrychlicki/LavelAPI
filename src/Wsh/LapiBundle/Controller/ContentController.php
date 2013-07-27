@@ -18,7 +18,7 @@ class ContentController extends Controller
     }
 
     /**
-     * Returns array of offer objects marked as featured
+     * Returns array of offerProviderSymbol objects marked as featured
      */
     public function getFeaturedAction()
     {
@@ -26,7 +26,7 @@ class ContentController extends Controller
     }
 
     /**
-     * Returns array of offer objects marked as hot deals
+     * Returns array of offerProviderSymbol objects marked as hot deals
      */
     public function getHotDeals()
     {

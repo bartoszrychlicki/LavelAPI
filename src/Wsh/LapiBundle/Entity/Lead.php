@@ -3,6 +3,8 @@
 namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 /**
  * Lead
@@ -12,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Lead
 {
+    use ApiEntityTrait;
     /**
      * @var integer
      *
@@ -23,29 +26,36 @@ class Lead
 
     /**
      * @var string
-     *
+     * @Assert\NotBlank()
      * @ORM\Column(name="phoneNumber", type="string", length=50)
      */
     private $phoneNumber;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="createdAt", type="datetimet")
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
+     * @ORM\Column(name="createdAt", type="datetime")
      */
     private $createdAt;
 
     /**
-     * @var \stdClass
+     * @var \Wsh\LapiBundle\Entity\User
      *
-     * @ORM\Column(name="user", type="object")
+     * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\User")
      */
     private $user;
 
     /**
      * @var \stdClass
-     *
-     * @ORM\Column(name="offer", type="object")
+     * @Assert\NotBlank()
+     * @ORM\Column(name="offerProviderSymbol", type="string", length=50)
+     */
+    private $offerProviderSymbol;
+
+    /**
+     * @var \Wsh\LapiBundle\Entity\Offer
+     * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\Offer")
      */
     private $offer;
 
@@ -63,12 +73,12 @@ class Lead
     /**
      * Set phoneNumber
      *
-     * @param string $phonenumber
+     * @param string $phoneNumber
      * @return Lead
      */
-    public function setPhoneNumber($phonenumber)
+    public function setPhoneNumber($phoneNumber)
     {
-        $this->phoneNumber = $phonenumber;
+        $this->phoneNumber = $phoneNumber;
     
         return $this;
     }
@@ -130,25 +140,25 @@ class Lead
     }
 
     /**
-     * Set offer
+     * Set offerProviderSymbol
      *
      * @param \stdClass $offer
      * @return Lead
      */
-    public function setOffer($offer)
+    public function setOfferProviderSymbol($offer)
     {
-        $this->offer = $offer;
+        $this->offerProviderSymbol = $offer;
     
         return $this;
     }
 
     /**
-     * Get offer
+     * Get offerProviderSymbol
      *
      * @return \stdClass 
      */
-    public function getOffer()
+    public function getOfferProviderSymbol()
     {
-        return $this->offer;
+        return $this->offerProviderSymbol;
     }
 }

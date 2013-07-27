@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\DependencyInjection\Container;
+use Wsh\LapiBundle\Entity\Lead;
 use Wsh\LapiBundle\Entity\User;
 
 
@@ -107,8 +108,16 @@ class UserController extends Controller
         return $user;
     }
 
-    public function sendSellsLead($appId, $phoneNumber, $securityToken)
+    public function registerSellsLead($appId, $phoneNumber, $offerId, $securityToken)
     {
+        $user = $this->getAppUser($appId, $securityToken);
+
+        $lead = new Lead();
+        $lead->setPhoneNumber($phoneNumber);
+        $lead->setUser($user);
+
+        // find offerProviderSymbol
+        $lead->setOfferProviderSymbol()
 
     }
 
