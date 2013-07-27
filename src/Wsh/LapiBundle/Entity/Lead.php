@@ -4,7 +4,8 @@ namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * Lead
@@ -15,6 +16,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Lead
 {
     use ApiEntityTrait;
+
+
     /**
      * @var integer
      *
@@ -43,6 +46,7 @@ class Lead
      * @var \Wsh\LapiBundle\Entity\User
      *
      * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\User")
+     * @Exclude()
      */
     private $user;
 
@@ -58,6 +62,11 @@ class Lead
      * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\Offer")
      */
     private $offer;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+    }
 
 
     /**

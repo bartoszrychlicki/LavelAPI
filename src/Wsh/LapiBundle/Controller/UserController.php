@@ -108,17 +108,36 @@ class UserController extends Controller
         return $user;
     }
 
-    public function registerSellsLead($appId, $phoneNumber, $offerId, $securityToken)
+    /**
+     * Register new sells lead
+     *
+     * @param $appId
+     * @param $params
+     * @param $securityToken
+     * @return Lead
+     */
+    public function registerSellsLead($appId, $params, $securityToken)
     {
         $user = $this->getAppUser($appId, $securityToken);
 
         $lead = new Lead();
-        $lead->setPhoneNumber($phoneNumber);
         $lead->setUser($user);
 
-        // find offerProviderSymbol
-        $lead->setOfferProviderSymbol()
+        $lead->populateFromObject($params);
 
+        $validator = $this->container->get('validator');
+        $em = $this->getDoctrine()->getManager();
+
+        // lets validate
+        $errors = $validator->validate($lead);
+        if (count($errors) > 0) {
+            return $errors;
+        }
+        $em->persist($lead);
+        $em->flush();
+
+        // todo: now send the lead to qtravel e-mail
+        return $lead;
     }
 
     /**
