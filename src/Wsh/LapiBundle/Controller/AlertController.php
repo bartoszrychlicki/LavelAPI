@@ -18,7 +18,7 @@ class AlertController extends Controller
         $this->container = $container;
     }
 
-    public function postAlert($appId, $securityToken, $searchParams)
+    public function postAlert($appId, $securityToken, $searchParams, $name)
     {
         // first let see if user not allready registered
         $em = $this->getDoctrine()->getManager();
@@ -36,6 +36,8 @@ class AlertController extends Controller
         $alert = new Alert();
         $alert->setUser($user);
         $alert->setSearchQueryParams($searchParams);
+        $alert->setName($name);
+
         $em->persist($alert);
         $em->flush();
 
