@@ -107,6 +107,19 @@ class UserController extends Controller
         return $user;
     }
 
+    public function sendSellsLead($appId, $phoneNumber, $securityToken)
+    {
+
+    }
+
+    /**
+     * User edit function
+     *
+     * @param $appId
+     * @param \stdClass $newData
+     * @param $securityToken
+     * @return mixed
+     */
     public function updateUser($appId, \stdClass $newData, $securityToken)
     {
         $validator = $this->container->get('validator');
