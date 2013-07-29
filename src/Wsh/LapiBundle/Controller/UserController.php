@@ -116,7 +116,7 @@ class UserController extends Controller
      * @param $securityToken
      * @return Lead
      */
-    public function registerSellsLead($appId, $params, $securityToken)
+    public function registerSalesLead($appId, $params, $securityToken)
     {
         $user = $this->getAppUser($appId, $securityToken);
 
@@ -137,6 +137,7 @@ class UserController extends Controller
         $em->flush();
 
         // todo: now send the lead to qtravel e-mail
+        $this->container->getParameter('sent_sales_leads_to')
         return $lead;
     }
 

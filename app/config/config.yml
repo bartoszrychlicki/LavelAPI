@@ -103,4 +103,4 @@ wa72_json_rpc:
             method: "hello"
         register_sells_lead:
             service: "wsh_lapi.users"
-            method: "registerSellsLead"
+            method: "registerSalesLead"
