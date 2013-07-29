@@ -137,7 +137,7 @@ class UserController extends Controller
         $em->flush();
 
         // todo: now send the lead to qtravel e-mail
-        $this->container->getParameter('sent_sales_leads_to')
+        $this->container->getParameter('sent_sales_leads_to');
         return $lead;
     }
 
