@@ -1,0 +1,12 @@
+Użytkownik aplikacji Travel Alert wyraził zainteresowanie Państwa ofertą.
+
+Data wygenerowania leada:
+{{ lead.createdAt|date("d-m-Y h:i:s") }}
+
+Symbol oferty która interesuje użytkownika:
+{{ lead.offerProviderSymbol }}
+
+Numer telefonu podany przez klienta:
+{{ lead.phoneNumber }}
+
+{% include 'WshLapiBundle:Emails:_footer.txt.twig' %}

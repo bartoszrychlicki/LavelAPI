@@ -101,6 +101,6 @@ wa72_json_rpc:
         testhello:
             service: "wa72_jsonrpc.testservice"
             method: "hello"
-        register_sells_lead:
+        register_sales_lead:
             service: "wsh_lapi.users"
             method: "registerSalesLead"

@@ -58,6 +58,22 @@ class Lead
     private $offerProviderSymbol;
 
     /**
+     * @param \Wsh\LapiBundle\Entity\Offer $offer
+     */
+    public function setOffer($offer)
+    {
+        $this->offer = $offer;
+    }
+
+    /**
+     * @return \Wsh\LapiBundle\Entity\Offer
+     */
+    public function getOffer()
+    {
+        return $this->offer;
+    }
+
+    /**
      * @var \Wsh\LapiBundle\Entity\Offer
      * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\Offer")
      */

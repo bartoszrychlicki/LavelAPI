@@ -28,7 +28,7 @@ class UserController extends Controller
 
     /**
      * Register new user or return existing one based on given AppId token
-     * @param $appIdToken unique user token generated in client app
+     * @param $appIdToken String unique user token generated in client app
      * @return User
      */
     public function registerDevice($appId, $developerToken)
@@ -137,7 +137,22 @@ class UserController extends Controller
         $em->flush();
 
         // todo: now send the lead to qtravel e-mail
-        $this->container->getParameter('sent_sales_leads_to');
+        $address = $this->container->getParameter('sent_sales_leads_to');
+        $message  = \Swift_Message::newInstance()
+            ->setSubject('Travel Alert Sales Lead')
+            ->setTo($address)
+            ->setFrom($this->container->getParameter('mailer_user'))
+            ->setBody(
+                $this->renderView(
+                    'WshLapiBundle:Emails:sent_sales_lead.txt.twig',
+                    array(
+                        'lead' => $lead
+                    )
+                )
+            );
+
+        $this->container->get('mailer')->send($message);
+
         return $lead;
     }
 
