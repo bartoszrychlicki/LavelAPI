@@ -46,6 +46,9 @@ class Provider implements OfferProviderInterface
     public function findOffersByParams($params)
     {
         $urlQueryParams = "";
+        if(!array_key_exists('query', $params)) {
+            throw new \Exception('Search params should atleast have "query" param');
+        }
         foreach($params as $key => $value)
         {
             $urlQueryParams .= '&'.$key.'='.$value;

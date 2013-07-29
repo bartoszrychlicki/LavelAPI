@@ -65,6 +65,12 @@ class Alert
      */
     private $name;
 
+    /**
+     * @var ArrayCollection Already offers downloaded from API
+     * @ORM\ManyToMany(targetEntity="Wsh\LapiBundle\Entity\Offer", cascade={"persist"})
+     */
+    private $offers;
+
     public function __construct()
     {
         $this->created = new \DateTime();
@@ -188,6 +194,22 @@ class Alert
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @param \Wsh\LapiBundle\Entity\ArrayCollection $offers
+     */
+    public function setOffers($offers)
+    {
+        $this->offers = $offers;
+    }
+
+    /**
+     * @return \Wsh\LapiBundle\Entity\ArrayCollection
+     */
+    public function getOffers()
+    {
+        return $this->offers;
     }
 
 }

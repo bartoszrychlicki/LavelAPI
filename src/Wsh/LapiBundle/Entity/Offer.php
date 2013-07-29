@@ -3,12 +3,16 @@
 namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 
 /**
  * Offer
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\OfferRepository")
+ * @UniqueEntity("qTravelOfferId")
  */
 class Offer
 {
@@ -23,7 +27,7 @@ class Offer
 
     /**
      * @var string
-     *
+     * @Assert\NotBlank()
      * @ORM\Column(name="qTravelOfferId", type="string", length=100)
      */
     private $qTravelOfferId;
@@ -44,7 +48,7 @@ class Offer
 
     /**
      * @var string
-     *
+     * @Assert\NotBlank()
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
@@ -72,7 +76,7 @@ class Offer
 
     /**
      * @var float
-     *
+     * @Assert\NotBlank()
      * @ORM\Column(name="price", type="float")
      */
     private $price;

@@ -8,7 +8,7 @@ use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Exclude;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-
+use Wsh\LapiBundle\Entity\Offer;
 
 /**
  * App user, identified by appId generated in client app
@@ -94,12 +94,19 @@ class User
      */
     private $sendLastMinuteAlert;
 
+    /**
+     * @var \Doctrine\Common\Collections\ArrayCollection Offers that users has marked via app as read
+     * @ORM\ManyToMany(targetEntity="Wsh\LapiBundle\Entity\Offer")
+     */
+    private $readOffers;
+
     public function __construct()
     {
         $this->created = new \DateTime();
         $this->sendHotDealsAlert = true;
         $this->sendLastMinuteAlert = true;
         $this->alerts = new ArrayCollection();
+        $this->readOffers = new ArrayCollection();
     }
 
 
@@ -323,5 +330,29 @@ class User
     public function getSendLastMinuteAlert()
     {
         return $this->sendLastMinuteAlert;
+    }
+
+    public function setOfferAsRead(Offer $offer)
+    {
+        $this->readOffers->add($offer);
+        return $this;
+    }
+
+    public function setOfferAsUnread(Offer $offer)
+    {
+        if($this->readOffers->contains($offer)) {
+            $this->readOffers->removeElement($offer);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getReadOffers()
+    {
+        return $this->readOffers;
     }
 }

@@ -14,5 +14,5 @@ interface OfferProviderInterface
     public function findOfferByName($name);
     public function findOffersByParams($params);
     public function getProviderName();
-
+    public function transformToEntity($response);
 }

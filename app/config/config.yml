@@ -92,7 +92,7 @@ wa72_json_rpc:
         update_alert:
             service: "wsh_lapi.alerts"
             method: "updateAlert"
-        get_alerts_offer:
+        get_ofers_for_alert:
             service: "wsh_lapi.alerts"
             method: "getAllOffersForAlert"
         get_user_alerts:
