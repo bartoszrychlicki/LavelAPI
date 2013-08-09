@@ -45,7 +45,7 @@ class Lead
     /**
      * @var \Wsh\LapiBundle\Entity\User
      *
-     * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\User")
+     * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\User", orphanRemoval=true)
      * @Exclude()
      */
     private $user;
