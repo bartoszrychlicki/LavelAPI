@@ -118,18 +118,18 @@ class AlertController extends Controller
         if(!$alert) {
             throw $this->createNotFoundException('No alert with id: '.$alertId.' found');
         }
+
         $response = $provider->findOffersByParams($alert->getSearchQueryParams());
         // now we can transport response to entity of offers
         $offers = $provider->transformToEntity($response);
-        // we must see with offers allready exist in DB and manualyy save then if not
-        $offersRepo = $em->getRepository('WshLapiBundle:Offer');
-        foreach($offers as $offer) {
-            if(!$offersRepo->findOneByQTravelOfferId($offer->getQTravelOfferId)) {
-                $em->persist($offer);
-            }
+        // todo: we must see if the offer exists in db update it with new data
+        // we dont want to save each call for offer
+
+        foreach($alert->getOffers() as $offer) {
+            $em->remove($offer);
         }
+
         $em->flush();
-        // save newest offers to alert
         $alert->setOffers($offers);
         // flush the changes
         $em->persist($alert);

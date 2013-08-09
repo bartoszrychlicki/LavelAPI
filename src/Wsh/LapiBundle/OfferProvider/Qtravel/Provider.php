@@ -64,7 +64,6 @@ class Provider implements OfferProviderInterface
 
     protected function sendRequest($url)
     {
-        echo $url;
         $buzz = $this->container->get('buzz');
         $response = $buzz->get($url);
         $this->setLastSentRequestUrl($url);
@@ -99,20 +98,24 @@ class Provider implements OfferProviderInterface
         // now iterate over each
         $collection = new ArrayCollection();
         foreach($json->offers->o as $offer) {
-            $offer = new Offer();
-            $offer->setName($offer->o_details->o_name);
-            $offer->setCity($offer->o_details->o_city);
-            $offer->setCountry($offer->o_details->o_country);
-            $offer->setDeparts($offer->o_details->o_departs->o_depart);
-            $offer->setDescription(strip_tags($offer->o_details->o_desc));
-            $offer->setIsHotDeal(false);
-            $offer->setIsFeatured(false);
-            $offer->setLeadPhoto($offer->o_photos->o_photo_link[0]);
-            $offer->setPrice($offer->o_details->o_bprice);
-            $offer->setQTravelOfferId($offer->o_details->o_code);
-            $offer->setDuration($offer->o_best->o_b_period);
+            $offerEnt = new Offer();
+            $offerEnt->setName(strip_tags($offer->o_details->o_name));
+            if(!empty($offer->o_details->o_city)) {
+                $offerEnt->setCity(strip_tags($offer->o_details->o_city));
+            }
+            $offerEnt->setCountry(strip_tags($offer->o_details->o_country));
+            if(!empty($offer->o_details->o_departs)) {
+                $offerEnt->setDeparts($offer->o_details->o_departs->o_depart);
+            }
+            $offerEnt->setDescription(strip_tags($offer->o_details->o_desc));
+            $offerEnt->setIsHotDeal(false);
+            $offerEnt->setIsFeatured(false);
+            $offerEnt->setLeadPhoto($offer->o_photos->o_photo_link[0]);
+            $offerEnt->setPrice($offer->o_details->o_bprice);
+            $offerEnt->setQTravelOfferId($offer->o_details->o_code);
+            $offerEnt->setDuration($offer->o_best->o_b_period);
 
-            $collection->add($offer);
+            $collection->add($offerEnt);
         }
 
         return $collection;

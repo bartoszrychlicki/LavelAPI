@@ -28,7 +28,7 @@ class Offer
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="qTravelOfferId", type="string", length=100)
+     * @ORM\Column(name="qTravelOfferId", type="string", length=100, unique=true)
      */
     private $qTravelOfferId;
 
@@ -70,7 +70,7 @@ class Offer
     /**
      * @var float
      *
-     * @ORM\Column(name="stars", type="float")
+     * @ORM\Column(name="stars", type="float", nullable=true)
      */
     private $stars;
 
@@ -98,14 +98,14 @@ class Offer
     /**
      * @var string
      *
-     * @ORM\Column(name="city", type="string", length=255)
+     * @ORM\Column(name="city", type="string", length=255, nullable=true)
      */
     private $city;
 
     /**
      * @var array
      *
-     * @ORM\Column(name="departs", type="array")
+     * @ORM\Column(name="departs", type="array", nullable=true)
      */
     private $departs;
 
