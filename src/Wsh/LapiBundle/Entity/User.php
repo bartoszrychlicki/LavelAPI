@@ -79,6 +79,13 @@ class User
     private $alerts;
 
     /**
+     * @var
+     * @ORM\OneToMany(targetEntity="Wsh\LapiBundle\Entity\Lead", mappedBy="user", cascade={"persist"})
+     * @Exclude
+     */
+    private $leads;
+
+    /**
      * @var boolean
      *
      * @ORM\Column(type="boolean")
@@ -107,6 +114,22 @@ class User
         $this->sendLastMinuteAlert = true;
         $this->alerts = new ArrayCollection();
         $this->readOffers = new ArrayCollection();
+    }
+
+    /**
+     * @param mixed $leads
+     */
+    public function setLeads($leads)
+    {
+        $this->leads = $leads;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLeads()
+    {
+        return $this->leads;
     }
 
 
@@ -287,6 +310,17 @@ class User
      */
     public function prePersist()
     {
+        foreach($this->getLeads() as $lead) {
+            $lead->setUser(null);
+        }
+    }
+
+    /**
+     * @ORM\PreRemove
+     */
+    public function preRemove()
+    {
+        // anonymise the lead
 
     }
 
