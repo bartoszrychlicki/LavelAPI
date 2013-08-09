@@ -64,6 +64,7 @@ class Provider implements OfferProviderInterface
 
     protected function sendRequest($url)
     {
+        echo $url;
         $buzz = $this->container->get('buzz');
         $response = $buzz->get($url);
         $this->setLastSentRequestUrl($url);
