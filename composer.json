@@ -21,7 +21,12 @@
         "incenteev/composer-parameter-handler": "~2.0",
         "jms/serializer-bundle": "dev-master",
         "wa72/jsonrpc-bundle": "dev-master",
-        "sensio/buzz-bundle": "dev-master"
+        "sensio/buzz-bundle": "dev-master",
+        "sonata-project/admin-bundle": "dev-master",
+        "sonata-project/doctrine-orm-admin-bundle": "dev-master",
+        "sonata-project/intl-bundle": "dev-master",
+        "sonata-project/cache-bundle": "dev-master",
+        "knplabs/knp-menu-bundle":"v1.1.2"
     },
     "scripts": {
         "post-install-cmd": [

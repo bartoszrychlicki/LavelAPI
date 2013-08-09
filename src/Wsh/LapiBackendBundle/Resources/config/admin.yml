@@ -1,0 +1,11 @@
+services:
+    sonata.admin.tag:
+        class: Wsh\LapiBackendBundle\Admin\OfferAdmin
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: offers, label: "Offers" }
+        arguments:
+            - ~
+            - Wsh\LapiBundle\Entity\Offer
+            - 'SonataAdminBundle:CRUD'
+        calls:
+            - [ setTranslationDomain, [SonataAdminBundle]]
