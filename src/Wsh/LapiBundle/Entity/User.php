@@ -306,7 +306,7 @@ class User
     }
 
     /**
-     * @ORM\PrePersist
+     * @ORM\PreRemove
      */
     public function prePersist()
     {
