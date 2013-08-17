@@ -118,3 +118,8 @@ sonata_block:
 sonata_admin:
   templates:
     layout: WshLapiBackendBundle::backend.html.twig
+
+fos_user:
+    db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
+    firewall_name: main
+    user_class: Wsh\LapiBackendBundle\Entity\AdminUser

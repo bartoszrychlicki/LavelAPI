@@ -19,3 +19,7 @@ _sonata_admin:
 admin_wsh_lapi_offer_create:
     pattern:  /admin/wsh/lapi/offer/import
     defaults: { _controller: WshLapiBackendBundle:Admin:importOffer }
+
+sonata_user:
+    resource: '@SonataUserBundle/Resources/config/routing/admin_security.xml'
+    prefix: /admin
