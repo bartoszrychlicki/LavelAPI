@@ -1,0 +1,7 @@
+{% extends 'WshLapiBackendBundle::backend.html.twig' %}
+{% block content %}
+    <h1>Import new offer</h1>
+    <form action="{{ path('admin_wsh_lapi_offer_create') }}" method="POST">
+        {{ form_widget(form) }}
+    </form>
+{% endblock content %}

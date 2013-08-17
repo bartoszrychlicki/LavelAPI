@@ -1,7 +1,7 @@
 wsh_lapi_backend:
     resource: "@WshLapiBackendBundle/Controller/"
     type:     annotation
-    prefix:   /backend
+    prefix:   /admin
 
 wa72_json_rpc:
     resource: "@Wa72JsonRpcBundle/Resources/config/routing.yml"
@@ -15,3 +15,7 @@ _sonata_admin:
     resource: .
     type: sonata_admin
     prefix: /admin
+
+admin_wsh_lapi_offer_create:
+    pattern:  /admin/wsh/lapi/offer/import
+    defaults: { _controller: WshLapiBackendBundle:Admin:importOffer }

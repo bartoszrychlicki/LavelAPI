@@ -395,4 +395,9 @@ class Offer
     {
         return $this->departs;
     }
+
+    public function __toString()
+    {
+        return $this->getQTravelOfferId().' - '.$this->getName();
+    }
 }

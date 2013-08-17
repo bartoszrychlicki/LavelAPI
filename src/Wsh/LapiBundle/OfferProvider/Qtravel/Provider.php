@@ -21,19 +21,23 @@ class Provider implements OfferProviderInterface
     protected $container;
     protected $apiGetRequestUrl;
     protected $lastSentRequestUrl;
+    protected $apiOfferRequestUrl;
 
     function __construct(Container $container)
     {
         $this->container = $container;
         $apiKey = $this->container->getParameter('qtravelApiKey');
         $apiRequestUrl = 'http://api.qtravel.pl/json/apis?qapikey='.$apiKey;
+
+        $this->apiOfferRequestUrl = 'http://api.qtravel.pl/json/apio?qapikey='.$apiKey;
         $this->apiGetRequestUrl = $apiRequestUrl;
 
     }
 
     public function findOfferById($id)
     {
-        return true;
+        $url = $this->apiOfferRequestUrl.'&o_code='.$id;
+        return $this->sendRequest($url);
     }
 
     public function findOfferByName($name)
@@ -119,6 +123,16 @@ class Provider implements OfferProviderInterface
         }
 
         return $collection;
+    }
+
+    /**
+     * Parses given url and resturns offer id if found
+     *
+     * @param $url string
+     */
+    public function parseUrl($url)
+    {
+        return preg_match('/\d{5}/', $url);
     }
 
 }

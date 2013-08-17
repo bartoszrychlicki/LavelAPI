@@ -13,6 +13,7 @@ class OfferAdmin extends Admin
         $formMapper
             ->add('name')
             ->add('isHotDeal', null, array('required' => false))
+            ->add('isFeatured', null, array('required' => false))
         ;
     }
 
@@ -21,6 +22,7 @@ class OfferAdmin extends Admin
         $datagridMapper
             ->add('name')
             ->add('isHotDeal')
+            ->add('isFeatured')
         ;
     }
 

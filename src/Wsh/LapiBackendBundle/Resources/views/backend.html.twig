@@ -1,27 +1,13 @@
-{% extends '::base.html.twig' %}
-{% block body %}
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container">
-                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="brand" href="#">Travel back-end</a>
+{% extends 'SonataAdminBundle::standard_layout.html.twig' %}
+{% block top_bar_after_nav %}
+
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        <li class="active"><a href="#">Featured and deals</a></li>
+                        <li><a href="{{ path('admin_wsh_lapi_offer_list')  }} ">Offers</a></li>
+                        <li><a href="{{ path('admin_wsh_lapi_offer_list')  }} ">Hot Deals and Featured</a></li>
                         <li><a href="#about">Leads</a></li>
                         <li><a href="#contact">Alerts</a></li>
                     </ul>
                 </div><!--/.nav-collapse -->
-            </div>
-        </div>
-    </div>
-    <div class="container">
 
-        {% block content %}
-        {% endblock content %}
-    </div> <!-- /container -->
-{% endblock body %}
+{% endblock top_bar_after_nav %}
