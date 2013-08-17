@@ -1,11 +1,32 @@
 services:
-    sonata.admin.tag:
+    sonata.admin.offer:
         class: Wsh\LapiBackendBundle\Admin\OfferAdmin
         tags:
             - { name: sonata.admin, manager_type: orm, group: offers, label: "Offers" }
         arguments:
             - ~
             - Wsh\LapiBundle\Entity\Offer
+            - 'SonataAdminBundle:CRUD'
+        calls:
+            - [ setTranslationDomain, [SonataAdminBundle]]
+    sonata.admin.user:
+        class: Wsh\LapiBackendBundle\Admin\UserAdmin
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: users, label: "Users" }
+        arguments:
+            - ~
+            - Wsh\LapiBundle\Entity\User
+            - 'SonataAdminBundle:CRUD'
+        calls:
+            - [ setTranslationDomain, [SonataAdminBundle]]
+
+    sonata.admin.leads:
+        class: Wsh\LapiBackendBundle\Admin\LeadAdmin
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: users, label: "Users" }
+        arguments:
+            - ~
+            - Wsh\LapiBundle\Entity\User
             - 'SonataAdminBundle:CRUD'
         calls:
             - [ setTranslationDomain, [SonataAdminBundle]]
