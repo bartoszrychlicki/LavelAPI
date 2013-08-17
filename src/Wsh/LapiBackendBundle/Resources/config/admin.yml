@@ -23,10 +23,10 @@ services:
     sonata.admin.leads:
         class: Wsh\LapiBackendBundle\Admin\LeadAdmin
         tags:
-            - { name: sonata.admin, manager_type: orm, group: users, label: "Users" }
+            - { name: sonata.admin, manager_type: orm, group: leads, label: "Leads" }
         arguments:
             - ~
-            - Wsh\LapiBundle\Entity\User
+            - Wsh\LapiBundle\Entity\Lead
             - 'SonataAdminBundle:CRUD'
         calls:
             - [ setTranslationDomain, [SonataAdminBundle]]
