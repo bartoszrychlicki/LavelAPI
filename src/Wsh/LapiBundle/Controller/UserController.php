@@ -38,6 +38,13 @@ class UserController extends Controller
         $validator = $this->container->get('validator');
 
         $user = new User();
+        $userRepo = $em->getRepository('WshLapiBundle:User');
+
+        if($userRepo->findOneBy(array('appId' => $appId))){
+            throw new \Exception('This appId is already used.');
+        }
+
+
         $user->setAppId($appId);
 
         // we must check the developer token
