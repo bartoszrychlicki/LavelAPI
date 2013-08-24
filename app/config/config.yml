@@ -74,7 +74,7 @@ wa72_json_rpc:
             method: "getHotDeals"
         get_featured:
             service: "wsh_lapi.content"
-            method: "getFeatured"
+            method: "getFeaturedOffers"
         register_device:
             service: "wsh_lapi.users"
             method: "registerDevice"
