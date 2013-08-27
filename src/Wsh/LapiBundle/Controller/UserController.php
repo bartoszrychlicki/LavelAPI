@@ -164,13 +164,13 @@ class UserController extends Controller
      * @param $securityToken
      * @return mixed
      */
-    public function updateUser($appId, \stdClass $newData, $securityToken)
+    public function updateUser($appId, \stdClass $options, $securityToken)
     {
         $validator = $this->container->get('validator');
         $em = $this->getDoctrine()->getManager();
 
         $user = $this->getAppUser($appId, $securityToken);
-        $user->populateFromObject($newData);
+        $user->populateFromObject($options);
         // lets validate user
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
