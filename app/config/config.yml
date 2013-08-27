@@ -1,8 +1,8 @@
 imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
+    - { resource: jsonrpc.yml }
     - { resource: @WshLapiBackendBundle/Resources/config/admin.yml }
-
 framework:
     #esi:             ~
     translator:      { fallback: %locale% }
@@ -65,47 +65,6 @@ swiftmailer:
     password:  %mailer_password%
     spool:     { type: memory }
 
-
-
-wa72_json_rpc:
-    functions:
-        get_hot_deals:
-            service: "wsh_lapi.content"
-            method: "getHotDeals"
-        get_featured:
-            service: "wsh_lapi.content"
-            method: "getFeaturedOffers"
-        register_device:
-            service: "wsh_lapi.users"
-            method: "registerDevice"
-        unregister_device:
-            service: "wsh_lapi.users"
-            method: "unRegisterDevice"
-        update_user:
-            service: "wsh_lapi.users"
-            method: "updateUser"
-        post_alert:
-            service: "wsh_lapi.alerts"
-            method: "postAlert"
-        delete_alert:
-            service: "wsh_lapi.alerts"
-            method: "deleteAlert"
-        update_alert:
-            service: "wsh_lapi.alerts"
-            method: "updateAlert"
-        get_ofers_for_alert:
-            service: "wsh_lapi.alerts"
-            method: "getAllOffersForAlert"
-        get_user_alerts:
-            service: "wsh_lapi.alerts"
-            method: "getUserAlerts"
-        testhello:
-            service: "wa72_jsonrpc.testservice"
-            method: "hello"
-        register_sales_lead:
-            service: "wsh_lapi.users"
-            method: "registerSalesLead"
-
 sonata_block:
     default_contexts: [cms]
     blocks:
@@ -123,3 +82,15 @@ fos_user:
     db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
     firewall_name: main
     user_class: Wsh\LapiBackendBundle\Entity\AdminUser
+
+services:
+    buzz.client.curl:
+        class:  Buzz\Client\Curl
+        public: false
+        calls:
+            - [setVerifyPeer, [false]]
+            - [setTimeout, [20]]
+
+    buzz.browser:
+        class:     Buzz\Browser
+        arguments: ['@buzz.client.curl']
