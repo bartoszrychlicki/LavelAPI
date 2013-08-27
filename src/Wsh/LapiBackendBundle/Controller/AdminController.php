@@ -6,6 +6,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Components\CssSelector\Parser;
+use Symfony\Component\DomCrawler\Crawler;
 use Wsh\LapiBackendBundle\Form\OfferImportType;
 use Wsh\LapiBundle\Entity\Offer;
 use Wsh\LapiBundle\OfferProvider\Qtravel\Provider as Qtravel;
@@ -35,12 +37,21 @@ class AdminController extends Controller
             $repo = $em->getRepository('WshLapiBundle:Offer');
             $offer = $repo->findOneByQTravelOfferId($offerId);
             if(!$offer) {
-                // create new object
+                set_time_limit(0);
+
+                $content = $provider->sendRequest($data['offerUrl']);
+                $crawler = new Crawler($content);
+                $crawler = $crawler->filter('a.book-term')->first()->attr('href');
+
+                $content = $provider->sendRequest($crawler);
+                $crawler = new Crawler($content);
+                $offerCode = $crawler->filter('div.code strong')->text();
+
                 $offer = new Offer();
 
-                // fetch the offer from provider
-                $response = $provider->findOfferById($offerId);
-                var_dump($response);exit();
+                $offerJson = $provider->findOfferById($offerCode);
+                $offer = $provider->transformSingleOfferToEntity($offerJson, $data['isFeatured'], $data['isHotDeal']);
+
             }
             $em->persist($offer);
             $em->flush();
