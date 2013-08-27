@@ -66,9 +66,9 @@ class Provider implements OfferProviderInterface
         return "QTravel API";
     }
 
-    protected function sendRequest($url)
+    public function sendRequest($url)
     {
-        $buzz = $this->container->get('buzz');
+        $buzz = $this->container->get('buzz.browser');
         $response = $buzz->get($url);
         $this->setLastSentRequestUrl($url);
         return $response->getContent();
@@ -123,6 +123,51 @@ class Provider implements OfferProviderInterface
         }
 
         return $collection;
+    }
+
+    public function transformSingleOfferToEntity($response, $isFeatured = false, $isHotDeal = false) {
+        $json = json_decode($response, true);
+
+        if(!($json["offer"])) {
+            throw new \Exception('Response does not have offer added to JSON object in '.__FUNCTION__);
+        }
+        if(count($json["offer"]) <= 0) {
+            throw new \Exception('Array with offer on JSON response object is empty in '.__FUNCTION__);
+        }
+
+        $offer = new Offer();
+
+        $offer->setQTravelOfferId($json["offer"]["o_code"]);
+        $offer->setIsFeatured($isFeatured);
+        $offer->setIsHotDeal($isHotDeal);
+        $offer->setName($json["offer"]["o_name"]);
+        $offer->setDescription($json["offer"]["o_desc"]);
+        $offer->setLeadPhoto($json["offer"]["o_photos"]["o_photo"][0]["@attributes"]["url"]);
+        $offer->setPrice($json["offer"]["o_bprice"]);
+        $offer->setCountry($json["offer"]["o_country"]);
+
+        if(!empty($json["offer"]["o_hcat"])) {
+            $offer->setStars($json["offer"]["o_hcat"]);
+        }
+        if(!empty($json["offer"]["o_cities"])) {
+            $offer->setCity($json["offer"]["o_cities"]);
+        }
+
+        if(count($json["offer"]["o_periods"]["o_period"]) == 1) {
+            $offer->setDuration(array($json["offer"]["o_periods"]["o_period"]));
+        } else {
+            $offer->setDuration($json["offer"]["o_periods"]["o_period"]);
+        }
+
+        if(!empty($json["offer"]["o_departures"])) {
+            if(count($json["offer"]["o_departures"]["o_departure"]) == 1) {
+                $offer->setDeparts(array($json["offer"]["o_departures"]["o_departure"]));
+            } else {
+                $offer->setDeparts($json["offer"]["o_departures"]["o_departure"]);
+            }
+        }
+
+        return $offer;
     }
 
     /**
