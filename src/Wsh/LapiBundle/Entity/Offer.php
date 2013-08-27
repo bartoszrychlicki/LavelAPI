@@ -84,7 +84,7 @@ class Offer
     /**
      * @var integer
      *
-     * @ORM\Column(name="duration", type="integer")
+     * @ORM\Column(name="duration", type="array", nullable=true)
      */
     private $duration;
 
