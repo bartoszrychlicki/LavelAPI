@@ -121,10 +121,6 @@ class AlertController extends Controller
             throw new \Exception('No wsh_lapi.users service registered');
         }
 
-        if ($this->has('debug.stopwatch')) {
-            $stopwatch = $this->get('debug.stopwatch');
-        }
-
         // fetches all offers that fits alert query
         $provider = $this->container->get('wsh_lapi.provider.qtravel');
         //get the alert
@@ -162,9 +158,7 @@ class AlertController extends Controller
                 $response = $provider->findOffersByParams($params);
             }
 
-            $stopwatch->start('transformToEntity');
             $offer = $provider->handleOfferResponse($response);
-            $stopwatch->stop('transformToEntity');
 
             if($offer != null){
                 $offers = new \Doctrine\Common\Collections\ArrayCollection(
