@@ -255,6 +255,24 @@ class AlertController extends Controller
             throw new \Exception('No wsh_lapi.users service registered');
         }
 
+        $em = $this->getDoctrine()->getManager();
+        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
+
+        foreach($user->getAlerts() as $alert) {
+            foreach($alert->getOffers() as $offer){
+                $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                    "offer_id" => $offer->getId(),
+                    "alert_id" => $alert->getId(),
+                    "user_id" => $user->getId()
+                ));
+
+                $readStatus = new ArrayCollection();
+                $readStatus->add($offerReadStatus);
+
+                $offer->setReadStatus($readStatus);
+            }
+        }
+
         return $user->getAlerts();
     }
 
