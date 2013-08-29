@@ -219,6 +219,8 @@ class Provider implements OfferProviderInterface
             }
         }
 
+        $offer->setCheckSum('null');
+
         return $offer;
     }
 
