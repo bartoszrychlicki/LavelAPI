@@ -36,3 +36,6 @@ wa72_json_rpc:
         register_sales_lead:
             service: "wsh_lapi.users"
             method: "registerSalesLead"
+        set_read_status:
+            service: "wsh_lapi.alerts"
+            method: "setReadStatus"
