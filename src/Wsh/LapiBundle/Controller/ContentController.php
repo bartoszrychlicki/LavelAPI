@@ -31,7 +31,9 @@ class ContentController extends Controller
             throw new \Exception('There is no offers with "Featured Offers" flag.');
         }
 
-        return $featuredOffers;
+        return array(
+            'offers' => $featuredOffers
+        );
     }
 
     /**
@@ -48,6 +50,8 @@ class ContentController extends Controller
             throw new \Exception('There is no offers with "Hot Deal" flag.');
         }
 
-        return $hotDealOffers;
+        return array(
+            'offers' => $hotDealOffers
+        );
     }
 }
