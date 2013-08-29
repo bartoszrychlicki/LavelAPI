@@ -102,10 +102,9 @@ class User
     private $sendLastMinuteAlert;
 
     /**
-     * @var \Doctrine\Common\Collections\ArrayCollection Offers that users has marked via app as read
-     * @ORM\ManyToMany(targetEntity="Wsh\LapiBundle\Entity\Offer")
+     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="user_id", cascade={"persist"})
      */
-    private $readOffers;
+    protected $readStatus;
 
     public function __construct()
     {
@@ -113,7 +112,6 @@ class User
         $this->sendHotDealsAlert = true;
         $this->sendLastMinuteAlert = true;
         $this->alerts = new ArrayCollection();
-        $this->readOffers = new ArrayCollection();
     }
 
     /**
@@ -366,27 +364,92 @@ class User
         return $this->sendLastMinuteAlert;
     }
 
-    public function setOfferAsRead(Offer $offer)
+    /**
+     * Remove alerts
+     *
+     * @param \Wsh\LapiBundle\Entity\Alert $alerts
+     */
+    public function removeAlert(\Wsh\LapiBundle\Entity\Alert $alerts)
     {
-        $this->readOffers->add($offer);
-        return $this;
-    }
-
-    public function setOfferAsUnread(Offer $offer)
-    {
-        if($this->readOffers->contains($offer)) {
-            $this->readOffers->removeElement($offer);
-            return true;
-        } else {
-            return false;
-        }
+        $this->alerts->removeElement($alerts);
     }
 
     /**
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * Add leads
+     *
+     * @param \Wsh\LapiBundle\Entity\Lead $leads
+     * @return User
      */
-    public function getReadOffers()
+    public function addLead(\Wsh\LapiBundle\Entity\Lead $leads)
     {
-        return $this->readOffers;
+        $this->leads[] = $leads;
+    
+        return $this;
+    }
+
+    /**
+     * Remove leads
+     *
+     * @param \Wsh\LapiBundle\Entity\Lead $leads
+     */
+    public function removeLead(\Wsh\LapiBundle\Entity\Lead $leads)
+    {
+        $this->leads->removeElement($leads);
+    }
+
+    /**
+     * Add readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     * @return User
+     */
+    public function addReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus[] = $readStatus;
+    
+        return $this;
+    }
+
+    /**
+     * Remove readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     */
+    public function removeReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus->removeElement($readStatus);
+    }
+
+    /**
+     * Get readStatus
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getReadStatus()
+    {
+        return $this->readStatus;
+    }
+
+    /**
+     * Add readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     * @return User
+     */
+    public function addReadStatu(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus[] = $readStatus;
+    
+        return $this;
+    }
+
+    /**
+     * Remove readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     */
+    public function removeReadStatu(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus->removeElement($readStatus);
     }
 }

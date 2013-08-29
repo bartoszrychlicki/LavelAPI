@@ -3,6 +3,7 @@
 namespace Wsh\LapiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Form\Extension\Core\DataTransformer\BooleanToStringTransformer;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -63,7 +64,7 @@ class Offer
     /**
      * @var string
      *
-     * @ORM\Column(name="leadPhoto", type="string", length=200)
+     * @ORM\Column(name="leadPhoto", type="string", length=200, nullable=true)
      */
     private $leadPhoto;
 
@@ -91,7 +92,7 @@ class Offer
     /**
      * @var string
      *
-     * @ORM\Column(name="country", type="string", length=255)
+     * @ORM\Column(name="country", type="string", length=255, nullable=true)
      */
     private $country;
 
@@ -108,6 +109,18 @@ class Offer
      * @ORM\Column(name="departs", type="array", nullable=true)
      */
     private $departs;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="checkSum", type="string", length=32)
+     */
+    private $checkSum;
+
+    /**
+     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="offer_id", cascade={"remove", "persist"})
+     */
+    protected $readStatus;
 
 
     /**
@@ -399,5 +412,73 @@ class Offer
     public function __toString()
     {
         return $this->getQTravelOfferId().' - '.$this->getName();
+    }
+
+    /**
+     * Set checkSum
+     *
+     * @param string $checkSum
+     * @return Offer
+     */
+    public function setCheckSum($checkSum)
+    {
+        $this->checkSum = $checkSum;
+    
+        return $this;
+    }
+
+    /**
+     * Get checkSum
+     *
+     * @return string 
+     */
+    public function getCheckSum()
+    {
+        return $this->checkSum;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->readStatus = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Add readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     * @return Offer
+     */
+    public function addReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus[] = $readStatus;
+    
+        return $this;
+    }
+
+    public function setReadStatus($readStatus)
+    {
+        $this->readStatus = $readStatus;
+        return $this;
+    }
+    /**
+     * Remove readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     */
+    public function removeReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus->removeElement($readStatus);
+    }
+
+    /**
+     * Get readStatus
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getReadStatus()
+    {
+        return $this->readStatus;
     }
 }

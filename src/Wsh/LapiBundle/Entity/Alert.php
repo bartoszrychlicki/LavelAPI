@@ -71,6 +71,12 @@ class Alert
      */
     private $offers;
 
+    /**
+     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="alert_id", cascade={"all"})
+     * @Exclude
+     */
+    protected $readStatus;
+
     public function __construct()
     {
         $this->created = new \DateTime();
@@ -212,4 +218,59 @@ class Alert
         return $this->offers;
     }
 
+    /**
+     * Add offers
+     *
+     * @param \Wsh\LapiBundle\Entity\Offer $offers
+     * @return Alert
+     */
+    public function addOffer(\Wsh\LapiBundle\Entity\Offer $offers)
+    {
+        $this->offers[] = $offers;
+    
+        return $this;
+    }
+
+    /**
+     * Remove offers
+     *
+     * @param \Wsh\LapiBundle\Entity\Offer $offers
+     */
+    public function removeOffer(\Wsh\LapiBundle\Entity\Offer $offers)
+    {
+        $this->offers->removeElement($offers);
+    }
+
+    /**
+     * Add readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     * @return Alert
+     */
+    public function addReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus[] = $readStatus;
+
+        return $this;
+    }
+
+    /**
+     * Remove readStatus
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
+     */
+    public function removeReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
+    {
+        $this->readStatus->removeElement($readStatus);
+    }
+
+    /**
+     * Get readStatus
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getReadStatus()
+    {
+        return $this->readStatus;
+    }
 }
