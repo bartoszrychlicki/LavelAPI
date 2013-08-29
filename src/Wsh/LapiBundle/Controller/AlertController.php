@@ -2,11 +2,14 @@
 
 namespace Wsh\LapiBundle\Controller;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\DependencyInjection\Container;
 use Wsh\LapiBundle\Entity\Alert;
+use Wsh\LapiBundle\Entity\OfferReadStatus;
+use Wsh\LapiBundle\Entity\User;
 use Wsh\LapiBundle\OfferProvider\Qtravel\Provider;
 
 class AlertController extends Controller
@@ -26,7 +29,7 @@ class AlertController extends Controller
             $userService = $this->container->get('wsh_lapi.users');
             $user = $userService->getAppUser($appId, $securityToken);
         } else {
-            throw new Exception('No wsh_lapi.users service registered');
+            throw new \Exception('No wsh_lapi.users service registered');
         }
         // check if that alert does not exist allready
         $alertRepo = $em->getRepository('WshLapiBundle:Alert');
@@ -107,36 +110,111 @@ class AlertController extends Controller
      * @return array
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function getAllOffersForAlert($alertId)
+    public function getAllOffersForAlert($appId, $securityToken, $alertId)
     {
+        set_time_limit(0);
+
+        if($this->container->has('wsh_lapi.users')) {
+            $userService = $this->container->get('wsh_lapi.users');
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new \Exception('No wsh_lapi.users service registered');
+        }
+
+        if ($this->has('debug.stopwatch')) {
+            $stopwatch = $this->get('debug.stopwatch');
+        }
+
         // fetches all offers that fits alert query
         $provider = $this->container->get('wsh_lapi.provider.qtravel');
         //get the alert
         $em = $this->getDoctrine()->getManager();
         $alertRepo = $em->getRepository('WshLapiBundle:Alert');
-        $alert = $alertRepo->find($alertId);
+        //$alert = $alertRepo->find($alertId);
+
+        $alert = $alertRepo->findOneBy(array(
+            'id' => $alertId,
+        ));
+
+        if($alert->getUser()->getId() != $user->getId()) {
+            throw new \Exception("This alert don't belong to this user.");
+        }
+
         if(!$alert) {
             throw $this->createNotFoundException('No alert with id: '.$alertId.' found');
         }
 
-        $response = $provider->findOffersByParams($alert->getSearchQueryParams());
-        // now we can transport response to entity of offers
-        $offers = $provider->transformToEntity($response);
-        // todo: we must see if the offer exists in db update it with new data
-        // we dont want to save each call for offer
+        $params = $alert->getSearchQueryParams();
 
-        foreach($alert->getOffers() as $offer) {
-            $em->remove($offer);
+        // Fetch first page to get number of pages for given alert//
+        $offerFirstPage = $provider->findOffersByParams($params);
+        $json = json_decode($offerFirstPage);
+        $pages =  $json->p->p_pages;
+        //--------------------------------------------------------//
+
+        $offers = new \Doctrine\Common\Collections\ArrayCollection();
+
+        for($i = 1; $i <= $pages; $i++) {
+            if($i == 1) {
+                $response = $offerFirstPage;
+            } else {
+                $params->page = $i;
+                $response = $provider->findOffersByParams($params);
+            }
+
+            $stopwatch->start('transformToEntity');
+            $offer = $provider->handleOfferResponse($response);
+            $stopwatch->stop('transformToEntity');
+
+            if($offer != null){
+                $offers = new \Doctrine\Common\Collections\ArrayCollection(
+                    array_merge($offers->toArray(), $offer->toArray())
+                );
+            }
         }
 
-        $em->flush();
+
+
+
+        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
+
+        foreach($offers as $offer){
+            $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                "offer_id" => $offer->getId(),
+                "alert_id" => $alertId,
+                "user_id" => $user->getId()
+            ));
+
+            if(!$offerReadStatus){
+                $offerReadStatus = new OfferReadStatus();
+                $offerReadStatus->setAlertId($alert);
+                $offerReadStatus->setOfferId($offer);
+                $offerReadStatus->setUserId($user);
+                $offerReadStatus->setStatus(0);
+
+                $offer->addReadStatus($offerReadStatus);
+            }
+        }
+
         $alert->setOffers($offers);
-        // flush the changes
         $em->persist($alert);
         $em->flush();
 
+        foreach($alert->getOffers() as $offer){
+            $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                "offer_id" => $offer->getId(),
+                "alert_id" => $alertId,
+                "user_id" => $user->getId()
+            ));
+
+            $readStatus = new ArrayCollection();
+            $readStatus->add($offerReadStatus);
+
+            $offer->setReadStatus($readStatus);
+        }
+
         return array(
-            'offers' => $offers,
+            'offers' => $alert->getOffers(),
             'requestUrl' => $provider->getLastSentRequestUrl()
         );
 
@@ -174,9 +252,53 @@ class AlertController extends Controller
             $userService = $this->container->get('wsh_lapi.users');
             $user = $userService->getAppUser($appId, $securityToken);
         } else {
-            throw new Exception('No wsh_lapi.users service registered');
+            throw new \Exception('No wsh_lapi.users service registered');
         }
+
         return $user->getAlerts();
+    }
+
+    public function setReadStatus($appId, $securityToken, $alertId, $offerId, $status)
+    {
+        if($this->container->has('wsh_lapi.users')) {
+            $userService = $this->container->get('wsh_lapi.users');
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new \Exception('No wsh_lapi.users service registered');
+        }
+
+        $em = $this->getDoctrine()->getManager();
+
+        $alert = $em->getRepository('WshLapiBundle:Alert')->findOneById($alertId);
+        $offer = $em->getRepository('WshLapiBundle:Offer')->findOneById($offerId);
+
+        if(!$alert) {
+            throw new \Exception('No alert with id '.$alertId.' found');
+        } elseif(!$offer) {
+            throw new \Exception('No offer with id '.$offerId.' found');
+        } elseif($status < 1 || $status > 2) {
+            throw new \Exception('Status must be 1(downloaded - not readed), or 2(downloaded - readed)');
+        }
+
+        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
+
+        $offer = $offerReadStatusRepo->findOneBy(array(
+            "offer_id" => $offerId,
+            "alert_id" => $alertId,
+        ));
+
+        if(!$offer) {
+            throw new \Exception("In given alert(".$alertId."), offer with id ".$offerId." was not found.");
+        } elseif($offer->getUserId()->getId() != $user->getId()) {
+            throw new \Exception("Given alert(".$alertId.") don't belong to this user");
+        }
+
+        $offer->setStatus($status);
+        $em->persist($offer);
+        $em->flush();
+
+        return 'Status changed';
+
     }
 
 }
