@@ -79,10 +79,23 @@ class UserController extends Controller
      * @return string
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function unRegisterDevice($appId, $securityToken)
+    public function unRegisterDevice($appId, $developerToken)
     {
-        $user = $this->getAppUser($appId, $securityToken);
+        if($this->container->getParameter('developerToken') != $developerToken) {
+            throw new \Exception('Developer token is not correct. Request not authorized.');
+        }
+
         $em = $this->getDoctrine()->getManager();
+        $userRepo = $em->getRepository('WshLapiBundle:User');
+
+        $user = $userRepo->findOneBy(array(
+           'appId' => $appId
+        ));
+
+        if(!$user) {
+            throw new \Exception('User with '.$appId.' was not found.');
+        }
+
 
         $em->remove($user);
         $em->flush();
