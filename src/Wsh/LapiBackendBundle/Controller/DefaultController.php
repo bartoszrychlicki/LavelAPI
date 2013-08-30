@@ -11,13 +11,15 @@ class DefaultController extends Controller
 {
     /**
      * @Route("/")
-     * @Template()
      */
     public function indexAction(Request $request)
     {
+        /*
         if ($request->getMethod() == 'POST') {
             // search of given offerProviderSymbol by
         }
-        return array();
+        return array();*/
+
+        return $this->redirect($this->generateUrl('sonata_admin_dashboard'));
     }
 }
