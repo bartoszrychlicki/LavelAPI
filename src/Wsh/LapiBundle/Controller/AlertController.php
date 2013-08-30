@@ -167,6 +167,12 @@ class AlertController extends Controller
             }
         }
 
+        $amount = array(
+            "status-0" => 0,
+            "status-1" => 0,
+            "status-2" => 0
+        );
+
 
 
 
@@ -187,6 +193,9 @@ class AlertController extends Controller
                 $offerReadStatus->setStatus(0);
 
                 $offer->addReadStatus($offerReadStatus);
+                $amount['status-0']++;
+            } else {
+                $amount['status-'.$offerReadStatus->getStatus()]++;
             }
         }
 
@@ -208,6 +217,7 @@ class AlertController extends Controller
         }
 
         return array(
+            'amount' => $amount,
             'offers' => $alert->getOffers(),
             'requestUrl' => $provider->getLastSentRequestUrl()
         );
