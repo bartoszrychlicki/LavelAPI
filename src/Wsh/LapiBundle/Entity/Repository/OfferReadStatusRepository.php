@@ -1,6 +1,6 @@
 <?php
 
-namespace Wsh\LapiBundle\Entity;
+namespace Wsh\LapiBundle\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
 
