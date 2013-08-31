@@ -52,6 +52,8 @@ doctrine:
         # if using pdo_sqlite as your database driver, add the path in parameters.yml
         # e.g. database_path: %kernel.root_dir%/data/data.db3
         # path:     %database_path%
+        types:
+                    json: Sonata\Doctrine\Types\JsonType
 
     orm:
         auto_generate_proxy_classes: %kernel.debug%
@@ -78,10 +80,17 @@ sonata_admin:
   templates:
     layout: WshLapiBackendBundle::backend.html.twig
 
+sonata_user:
+    class:
+        user: Wsh\LapiBackendBundle\Entity\User
+        group: Wsh\LapiBackendBundle\Entity\Group
+
 fos_user:
     db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
-    firewall_name: main
-    user_class: Wsh\LapiBackendBundle\Entity\AdminUser
+    firewall_name: admin
+    user_class: Wsh\LapiBackendBundle\Entity\User
+    group:
+            group_class: Wsh\LapiBackendBundle\Entity\Group
 
 services:
     buzz.client.curl:
