@@ -12,7 +12,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * Offer
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\OfferRepository")
+ * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\OfferRepository")
  * @UniqueEntity("qTravelOfferId")
  */
 class Offer
@@ -20,9 +20,8 @@ class Offer
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(name="id", type="string", length=100, unique=true)
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
@@ -57,7 +56,7 @@ class Offer
     /**
      * @var string
      *
-     * @ORM\Column(name="description", type="text")
+     * @ORM\Column(name="description", type="text", nullable=true)
      */
     private $description;
 
@@ -118,7 +117,7 @@ class Offer
     private $checkSum;
 
     /**
-     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="offer_id", cascade={"remove", "persist"})
+     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="offer_id", cascade={"persist"})
      */
     protected $readStatus;
 
@@ -126,7 +125,7 @@ class Offer
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -142,6 +141,7 @@ class Offer
     public function setQTravelOfferId($qTravelOfferId)
     {
         $this->qTravelOfferId = $qTravelOfferId;
+        $this->id = $qTravelOfferId;
     
         return $this;
     }
