@@ -43,6 +43,13 @@ class Lead
     private $createdAt;
 
     /**
+     * @var float
+     * @Assert\NotBlank()
+     * @ORM\Column(name="price", type="float")
+     */
+    private $price;
+
+    /**
      * @var \Wsh\LapiBundle\Entity\User
      *
      * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\User", inversedBy="leads")
@@ -76,6 +83,7 @@ class Lead
     /**
      * @var \Wsh\LapiBundle\Entity\Offer
      * @ORM\ManyToOne(targetEntity="\Wsh\LapiBundle\Entity\Offer")
+     * @Exclude
      */
     private $offer;
 
@@ -139,6 +147,29 @@ class Lead
     public function getCreatedAt()
     {
         return $this->createdAt;
+    }
+
+    /**
+     * Set price
+     *
+     * @param float $price
+     * @return Offer
+     */
+    public function setPrice($price)
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    /**
+     * Get price
+     *
+     * @return float
+     */
+    public function getPrice()
+    {
+        return $this->price;
     }
 
     /**
