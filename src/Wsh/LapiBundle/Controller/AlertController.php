@@ -110,7 +110,7 @@ class AlertController extends Controller
      * @return array
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function getAllOffersForAlert($appId, $securityToken, $alertId)
+    public function getAllOffersForAlert($appId, $securityToken, $alertId, $page)
     {
         set_time_limit(0);
 
@@ -121,51 +121,40 @@ class AlertController extends Controller
             throw new \Exception('No wsh_lapi.users service registered');
         }
 
-        // fetches all offers that fits alert query
-        $provider = $this->container->get('wsh_lapi.provider.qtravel');
-        //get the alert
         $em = $this->getDoctrine()->getManager();
+
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
         $alertRepo = $em->getRepository('WshLapiBundle:Alert');
-        //$alert = $alertRepo->find($alertId);
+        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
-        $alert = $alertRepo->findOneBy(array(
-            'id' => $alertId,
-        ));
-
-        if($alert->getUser()->getId() != $user->getId()) {
-            throw new \Exception("This alert don't belong to this user.");
-        }
+        /////////////////// CHECKING PARAMETERS ////////////////////////////////////////////////////////////
+        $alert = $alertRepo->find($alertId);
 
         if(!$alert) {
             throw $this->createNotFoundException('No alert with id: '.$alertId.' found');
         }
 
+        if($alert->getUser()->getId() != $user->getId()) {
+            throw new \Exception("This alert don't belong to this user.");
+        }
+
+        $maxPage = $alert->getNumberOfPages();
+
+        if(empty($maxPage) || $maxPage === null) {
+            throw new \Exception('First get number of page with "get_number_of_pages_for_alert" method.');
+        } elseif($page == 0 || $page > $maxPage) {
+            throw new \Exception("'page' parameter for this alert can't be bigger then ".$maxPage
+                                    ." and lesser then 1");
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
         $params = $alert->getSearchQueryParams();
 
-        // Fetch first page to get number of pages for given alert//
-        $offerFirstPage = $provider->findOffersByParams($params);
-        $json = json_decode($offerFirstPage);
-        $pages =  $json->p->p_pages;
-        //--------------------------------------------------------//
+        $params->page = $page;
+        $response = $provider->findOffersByParams($params);
 
-        $offers = new \Doctrine\Common\Collections\ArrayCollection();
-
-        for($i = 1; $i <= $pages; $i++) {
-            if($i == 1) {
-                $response = $offerFirstPage;
-            } else {
-                $params->page = $i;
-                $response = $provider->findOffersByParams($params);
-            }
-
-            $offer = $provider->handleOfferResponse($response);
-
-            if($offer != null){
-                $offers = new \Doctrine\Common\Collections\ArrayCollection(
-                    array_merge($offers->toArray(), $offer->toArray())
-                );
-            }
-        }
+        $offerFromProvider = $provider->handleOfferResponse($response);
+        $offerToSerialize = new ArrayCollection();
 
         $amount = array(
             "status-0" => 0,
@@ -173,41 +162,57 @@ class AlertController extends Controller
             "status-2" => 0
         );
 
+        $alertOffertsCount = count($alert->getOffers());
 
+        foreach($offerFromProvider->getKeys() as $key) {
 
+            if($key < 100) {
+                $alert->addOffer($offerFromProvider->get($key));
+            } else {
+                if($alertOffertsCount == 0) {
+                    $alert->addOffer($offerFromProvider->get($key));
+                } else {
+                    $exist = false;
+                    foreach($alert->getOffers() as $offer) {
+                        if($offer->getId() == $offerFromProvider->get($key)->getId()) {
+                            $exist = true;
+                        }
+                    }
+                    if(!$exist) {
+                        $alert->addOffer($offerFromProvider->get($key));
+                    }
+                }
+            }
 
-        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
-
-        foreach($offers as $offer){
             $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
-                "offer_id" => $offer->getId(),
-                "alert_id" => $alertId,
-                "user_id" => $user->getId()
+                "offer_id" => $offerFromProvider->get($key)->getId(),
+                "alert_id" => $alertId
             ));
 
             if(!$offerReadStatus){
                 $offerReadStatus = new OfferReadStatus();
                 $offerReadStatus->setAlertId($alert);
-                $offerReadStatus->setOfferId($offer);
-                $offerReadStatus->setUserId($user);
+                $offerReadStatus->setOfferId($offerFromProvider->get($key));
                 $offerReadStatus->setStatus(0);
+                $offerReadStatus->setTempOfferId($offerFromProvider->get($key)->getId());
 
-                $offer->addReadStatus($offerReadStatus);
+                $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
+
                 $amount['status-0']++;
             } else {
                 $amount['status-'.$offerReadStatus->getStatus()]++;
             }
+
+            $offerToSerialize->add($offerFromProvider->get($key));
         }
 
-        $alert->setOffers($offers);
         $em->persist($alert);
         $em->flush();
 
         foreach($alert->getOffers() as $offer){
             $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
                 "offer_id" => $offer->getId(),
-                "alert_id" => $alertId,
-                "user_id" => $user->getId()
+                "alert_id" => $alertId
             ));
 
             $readStatus = new ArrayCollection();
@@ -218,7 +223,7 @@ class AlertController extends Controller
 
         return array(
             'amount' => $amount,
-            'offers' => $alert->getOffers(),
+            'offers' => $offerToSerialize,
             'requestUrl' => $provider->getLastSentRequestUrl()
         );
 
@@ -267,7 +272,6 @@ class AlertController extends Controller
                 $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
                     "offer_id" => $offer->getId(),
                     "alert_id" => $alert->getId(),
-                    "user_id" => $user->getId()
                 ));
 
                 $readStatus = new ArrayCollection();
@@ -275,6 +279,10 @@ class AlertController extends Controller
 
                 $offer->setReadStatus($readStatus);
             }
+        }
+
+        if(count($user->getAlerts()) == 0) {
+            throw new \Exception('This user have no alerts');
         }
 
         return $user->getAlerts();
@@ -311,8 +319,6 @@ class AlertController extends Controller
 
         if(!$offer) {
             throw new \Exception("In given alert(".$alertId."), offer with id ".$offerId." was not found.");
-        } elseif($offer->getUserId()->getId() != $user->getId()) {
-            throw new \Exception("Given alert(".$alertId.") don't belong to this user");
         }
 
         $offer->setStatus($status);
@@ -320,6 +326,41 @@ class AlertController extends Controller
         $em->flush();
 
         return 'Status changed';
+    }
+
+    public function getNumberOfPages($alertId)
+    {
+        if(!is_numeric($alertId)) {
+            throw new \Exception('Alert id must be number.');
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $alertRepo = $em->getRepository('WshLapiBundle:Alert');
+        $alert = $alertRepo->find($alertId);
+
+        if(!$alert) {
+            throw new \Exception('No alert with id '.$alertId.' found');
+        }
+
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
+
+        $params = $alert->getSearchQueryParams();
+        $offerFirstPage = $provider->findOffersByParams($params);
+        $json = json_decode($offerFirstPage);
+
+        if($json->p->p_pages != 0) {
+            $alert->setNumberOfPages($json->p->p_pages);
+        } else {
+            throw new \Exception('No offers for this alert found.');
+        }
+
+
+        $em->persist($alert);
+        $em->flush();
+
+        return array(
+            'pages' => $alert->getNumberOfPages()
+        );
 
     }
 
