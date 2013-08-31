@@ -136,17 +136,39 @@ class UserController extends Controller
      * @param $securityToken
      * @return Lead
      */
-    public function registerSalesLead($appId, $params, $securityToken)
+    public function registerSalesLead($appId, $arguments, $securityToken)
     {
         $user = $this->getAppUser($appId, $securityToken);
+        $em = $this->getDoctrine()->getManager();
+
+        $offerRepo = $em->getRepository('WshLapiBundle:Offer');
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
+
+        if(array_key_exists('offerId', $arguments)) {
+            $offer = $offerRepo->findOneByQTravelOfferId($arguments->offerId);
+        } else {
+            throw new \Exception("Parameter 'offerId' must exist in 'arguments'.");
+        }
+
+        if(!array_key_exists('price', $arguments)) {
+            throw new \Exception("Parameter 'price' must exist in 'arguments'.");
+        } elseif(!is_numeric($arguments->price)) {
+            throw new \Exception("Parameter 'price' in 'arguments' must be numeric.");
+
+        }
+
+
+        if(!$offer) {
+            throw new \Exception("Offer with id ".$arguments->offerId." not found.");
+        }
 
         $lead = new Lead();
         $lead->setUser($user);
+        $lead->setOffer($offer);
 
-        $lead->populateFromObject($params);
+        $lead->populateFromObject($arguments);
 
         $validator = $this->container->get('validator');
-        $em = $this->getDoctrine()->getManager();
 
         // lets validate
         $errors = $validator->validate($lead);
