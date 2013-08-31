@@ -47,16 +47,23 @@ class AdminController extends Controller
                 $crawler = new Crawler($content);
                 $offerCode = $crawler->filter('div.code strong')->text();
 
-                $offer = new Offer();
-
-                $offerJson = $provider->findOfferById($offerCode);
-                $offer = $provider->transformSingleOfferToEntity($offerJson, $data['isFeatured'], $data['isHotDeal']);
-
+                $offer = $repo->findOneByQTravelOfferId($offerCode);
+                if(!$offer) {
+                    $offer = new Offer();
+                    $offerJson = $provider->findOfferById($offerCode);
+                    $offer = $provider->transformSingleOfferToEntity($offerJson, $data['isFeatured'], $data['isHotDeal']);
+                } else {
+                    $this->get('session')->getFlashBag()->add(
+                        'sonata_flash_error',
+                        'Podana oferta istnieje już w bazie.'
+                    );
+                    return $this->redirect($this->generateUrl('admin_wsh_lapi_offer_list'));
+                }
             }
             $em->persist($offer);
             $em->flush();
             $this->get('session')->getFlashBag()->add(
-                'notice',
+                'sonata_flash_success',
                 'Nowa oferta została zaimportowana'
             );
 
