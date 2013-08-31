@@ -11,10 +11,12 @@ namespace Wsh\LapiBundle\OfferProvider\Qtravel;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\DependencyInjection\Container;
+
+use Wsh\LapiBundle\OfferProvider\OfferProviderInterface;
 use Wsh\LapiBundle\Entity\Offer;
 use Wsh\LapiBundle\Entity\OfferReadStatus;
-use Wsh\LapiBundle\OfferProvider\OfferProviderInterface;
-use Symfony\Component\Stopwatch\Stopwatch;
+use Wsh\LapiBundle\Entity\User;
+use Wsh\LapiBundle\Entity\Alert;
 
 class Provider implements OfferProviderInterface
 {
@@ -105,7 +107,9 @@ class Provider implements OfferProviderInterface
             if(count($json->offers->o) <= 0) {
                 throw new \Exception('Array with offers on JSON response object is empty in '.__FUNCTION__);
             }
-            // now iterate over each
+
+            $i=1;
+
             $collection = new ArrayCollection();
             foreach($json->offers->o as $offer) {
                 $checkSum = md5(serialize($offer));
@@ -113,25 +117,29 @@ class Provider implements OfferProviderInterface
 
                 if($offerDB){
                     if($offerDB->getCheckSum() != $checkSum){
-                        $this->doctrine->remove($offerDB);
-                        $this->doctrine->flush();
-                        $collection->add($this->transformToEntity($offer));
+                        $collection->set(200 + $i, $this->transformToEntity($offer, $offerDB));
                     } else {
-                        $collection->add($offerDB);
+                        $collection->set(100 + $i, $offerDB);
                     }
                 } else {
-                    $collection->add($this->transformToEntity($offer));
+                    $collection->set($i, $this->transformToEntity($offer));
                 }
+                $i++;
             }
+            $this->doctrine->flush();
             return $collection;
         } else {
             return null;
         }
     }
 
-    public function transformToEntity($offer)
+    public function transformToEntity($offer, &$offerDB = null)
     {
-        $offerEnt = new Offer();
+        if($offerDB == null) {
+            $offerEnt = new Offer();
+        } else {
+            $offerEnt = $offerDB;
+        }
         $offerEnt->setName(strip_tags($offer->o_details->o_name));
         if(!empty($offer->o_details->o_city)) {
             $offerEnt->setCity(strip_tags($offer->o_details->o_city));
@@ -144,9 +152,6 @@ class Provider implements OfferProviderInterface
         if(!empty($offer->o_details->o_desc)) {
             $offerEnt->setDescription(strip_tags($offer->o_details->o_desc));
         }
-
-        $offerEnt->setIsHotDeal(false);
-        $offerEnt->setIsFeatured(false);
 
         if(!empty($offer->o_photos)) {
             $offerEnt->setLeadPhoto($offer->o_photos->o_photo_link[0]);
@@ -190,13 +195,25 @@ class Provider implements OfferProviderInterface
         $offer = new Offer();
 
         $offer->setQTravelOfferId($json["offer"]["o_code"]);
+
         $offer->setIsFeatured($isFeatured);
         $offer->setIsHotDeal($isHotDeal);
-        $offer->setName($json["offer"]["o_name"]);
-        $offer->setDescription($json["offer"]["o_desc"]);
-        $offer->setLeadPhoto($json["offer"]["o_photos"]["o_photo"][0]["@attributes"]["url"]);
+        $offer->setName(strip_tags($json["offer"]["o_name"]));
+
+        if(!empty($json["offer"]["o_desc"])) {
+            $offer->setDescription(strip_tags($json["offer"]["o_desc"]));
+        }
+
+        if(!empty($json["offer"]["o_photos"])) {
+            $offer->setLeadPhoto($json["offer"]["o_photos"]["o_photo"][0]["@attributes"]["url"]);
+        }
+
         $offer->setPrice($json["offer"]["o_bprice"]);
+
+
+        if(!empty($json["offer"]["o_country"])) {
         $offer->setCountry($json["offer"]["o_country"]);
+        }
 
         if(!empty($json["offer"]["o_hcat"])) {
             $offer->setStars($json["offer"]["o_hcat"]);
