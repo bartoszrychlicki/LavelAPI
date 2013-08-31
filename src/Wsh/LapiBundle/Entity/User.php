@@ -14,7 +14,7 @@ use Wsh\LapiBundle\Entity\Offer;
  * App user, identified by appId generated in client app
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\UserRepository")
+ * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\UserRepository")
  * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("appId")
  */
@@ -100,11 +100,6 @@ class User
      * @Assert\Type(type="bool")
      */
     private $sendLastMinuteAlert;
-
-    /**
-     * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="user_id", cascade={"persist"})
-     */
-    protected $readStatus;
 
     public function __construct()
     {
@@ -395,61 +390,5 @@ class User
     public function removeLead(\Wsh\LapiBundle\Entity\Lead $leads)
     {
         $this->leads->removeElement($leads);
-    }
-
-    /**
-     * Add readStatus
-     *
-     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
-     * @return User
-     */
-    public function addReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
-    {
-        $this->readStatus[] = $readStatus;
-    
-        return $this;
-    }
-
-    /**
-     * Remove readStatus
-     *
-     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
-     */
-    public function removeReadStatus(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
-    {
-        $this->readStatus->removeElement($readStatus);
-    }
-
-    /**
-     * Get readStatus
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getReadStatus()
-    {
-        return $this->readStatus;
-    }
-
-    /**
-     * Add readStatus
-     *
-     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
-     * @return User
-     */
-    public function addReadStatu(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
-    {
-        $this->readStatus[] = $readStatus;
-    
-        return $this;
-    }
-
-    /**
-     * Remove readStatus
-     *
-     * @param \Wsh\LapiBundle\Entity\OfferReadStatus $readStatus
-     */
-    public function removeReadStatu(\Wsh\LapiBundle\Entity\OfferReadStatus $readStatus)
-    {
-        $this->readStatus->removeElement($readStatus);
     }
 }
