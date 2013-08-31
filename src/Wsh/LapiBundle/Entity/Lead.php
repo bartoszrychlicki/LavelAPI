@@ -92,6 +92,11 @@ class Lead
         $this->createdAt = new \DateTime();
     }
 
+    public function __toString()
+    {
+        return $this->getId().'. Lead';
+    }
+
 
     /**
      * Get id

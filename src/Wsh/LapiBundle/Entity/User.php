@@ -109,6 +109,11 @@ class User
         $this->alerts = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return $this->getAppId();
+    }
+
     /**
      * @param mixed $leads
      */
