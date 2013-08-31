@@ -160,7 +160,7 @@ class Provider implements OfferProviderInterface
         $offerEnt->setPrice($offer->o_details->o_bprice);
         $offerEnt->setQTravelOfferId($offer->o_details->o_code);
 
-        if($offerDB != null) {
+        if($offerDB == null) {
             $offerEnt->setIsHotDeal(false);
             $offerEnt->setIsFeatured(false);
         }
