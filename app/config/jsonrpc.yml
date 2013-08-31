@@ -39,3 +39,6 @@ wa72_json_rpc:
         set_read_status:
             service: "wsh_lapi.alerts"
             method: "setReadStatus"
+        get_number_of_pages_for_alert:
+            service: "wsh_lapi.alerts"
+            method: "getNumberOfPages"
