@@ -13,7 +13,7 @@ use JMS\Serializer\Annotation\Type;
  * Alert
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\AlertRepository")
+ * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\AlertRepository")
  * @ExclusionPolicy("none")
  */
 class Alert
@@ -64,6 +64,13 @@ class Alert
      * @ORM\Column(type="string", nullable=true)
      */
     private $name;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $numberOfPages;
 
     /**
      * @var ArrayCollection Already offers downloaded from API
@@ -200,6 +207,22 @@ class Alert
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @param integer $numberOfPages
+     */
+    public function setNumberOfPages($numberOfPages)
+    {
+        $this->numberOfPages = $numberOfPages;
+    }
+
+    /**
+     * @return integer
+     */
+    public function getNumberOfPages()
+    {
+        return $this->numberOfPages;
     }
 
     /**
