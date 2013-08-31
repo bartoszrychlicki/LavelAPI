@@ -14,7 +14,7 @@ use JMS\Serializer\Handler\ArrayCollectionHandler;
  * Alert
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\OfferReadStatusRepository")
+ * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\OfferReadStatusRepository")
  * @ExclusionPolicy("none")
  */
 class OfferReadStatus
@@ -38,17 +38,10 @@ class OfferReadStatus
 
     /**
      * @ORM\ManyToOne(targetEntity="Offer", inversedBy="offer_id", cascade={"persist"})
-     * @ORM\JoinColumn(name="offer_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="offer_id", referencedColumnName="id", nullable=true)
      * @Exclude
      */
     protected $offer_id;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="user_id")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     * @Exclude
-     */
-    protected $user_id;
 
     /**
      * @var integer
@@ -56,6 +49,14 @@ class OfferReadStatus
      * @ORM\Column(name="status", type="integer")
      */
     private $status;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="temp_offer_id", type="string", length=100)
+     * @Exclude
+     */
+    private $tempOfferId;
 
     /**
      * Get id
@@ -114,29 +115,6 @@ class OfferReadStatus
     }
 
     /**
-     * Set user_id
-     *
-     * @param \Wsh\LapiBundle\Entity\User $userId
-     * @return OfferReadStatus
-     */
-    public function setUserId(\Wsh\LapiBundle\Entity\User $userId = null)
-    {
-        $this->user_id = $userId;
-    
-        return $this;
-    }
-
-    /**
-     * Get user_id
-     *
-     * @return \Wsh\LapiBundle\Entity\User 
-     */
-    public function getUserId()
-    {
-        return $this->user_id;
-    }
-
-    /**
      * Set status
      *
      * @param integer $status
@@ -157,5 +135,28 @@ class OfferReadStatus
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set tempOfferId
+     *
+     * @param string $tempOfferId
+     * @return OfferReadStatus
+     */
+    public function setTempOfferId($tempOfferId)
+    {
+        $this->tempOfferId = $tempOfferId;
+
+        return $this;
+    }
+
+    /**
+     * Get tempOfferId
+     *
+     * @return string
+     */
+    public function getTempOfferId()
+    {
+        return $this->tempOfferId;
     }
 }
