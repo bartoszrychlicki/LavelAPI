@@ -95,10 +95,11 @@ class AlertController extends Controller
                 }
             }
         }
+        $alert->setNumberOfPages(null);
         $em->persist($alert);
         $em->flush();
 
-        return $alert;
+        return "Alert ".$alertId." updated.";
     }
 
     /**
