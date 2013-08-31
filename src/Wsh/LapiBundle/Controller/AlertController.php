@@ -267,22 +267,26 @@ class AlertController extends Controller
         $em = $this->getDoctrine()->getManager();
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
-        foreach($user->getAlerts() as $alert) {
-            foreach($alert->getOffers() as $offer){
-                $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
-                    "offer_id" => $offer->getId(),
-                    "alert_id" => $alert->getId(),
-                ));
-
-                $readStatus = new ArrayCollection();
-                $readStatus->add($offerReadStatus);
-
-                $offer->setReadStatus($readStatus);
-            }
+        if(count($user->getAlerts()) == 0) {
+            throw new \Exception('This user has no alerts');
         }
 
-        if(count($user->getAlerts()) == 0) {
-            throw new \Exception('This user have no alerts');
+
+
+        foreach($user->getAlerts() as $alert) {
+            if(count($alert->getOffers()) != 0) {
+                foreach($alert->getOffers() as $offer){
+                    $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                        "offer_id" => $offer->getId(),
+                        "alert_id" => $alert->getId(),
+                    ));
+
+                    $readStatus = new ArrayCollection();
+                    $readStatus->add($offerReadStatus);
+
+                    $offer->setReadStatus($readStatus);
+                }
+            }
         }
 
         return $user->getAlerts();

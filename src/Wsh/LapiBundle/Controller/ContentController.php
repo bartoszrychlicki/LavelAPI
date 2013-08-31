@@ -31,6 +31,10 @@ class ContentController extends Controller
             throw new \Exception('There is no offers with "Featured Offers" flag.');
         }
 
+        foreach($featuredOffers as $offer) {
+            $offer->setReadStatus(null);
+        }
+
         return array(
             'offers' => $featuredOffers
         );
@@ -48,6 +52,10 @@ class ContentController extends Controller
 
         if(!$hotDealOffers){
             throw new \Exception('There is no offers with "Hot Deal" flag.');
+        }
+
+        foreach($hotDealOffers as $offer) {
+            $offer->setReadStatus(null);
         }
 
         return array(
