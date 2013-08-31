@@ -11,7 +11,7 @@ use JMS\Serializer\Annotation\Exclude;
  * Lead
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\LeadRepository")
+ * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\LeadRepository")
  */
 class Lead
 {
