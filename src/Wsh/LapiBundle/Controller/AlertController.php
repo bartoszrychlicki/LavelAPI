@@ -198,13 +198,17 @@ class AlertController extends Controller
                 $offerReadStatus->setTempOfferId($offerFromProvider->get($key)->getId());
 
                 $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
-
-                $amount['status-0']++;
-            } else {
-                $amount['status-'.$offerReadStatus->getStatus()]++;
             }
 
             $offerToSerialize->add($offerFromProvider->get($key));
+        }
+
+        foreach($alert->getOffers() as $offer) {
+            foreach($offer->getReadStatus() as $ors){
+                if($ors->getAlertId()->getId() == $alertId) {
+                    $amount['status-'.$ors->getStatus()]++;
+                }
+            }
         }
 
         $em->persist($alert);
