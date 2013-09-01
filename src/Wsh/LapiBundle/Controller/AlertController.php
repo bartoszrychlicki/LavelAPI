@@ -293,7 +293,7 @@ class AlertController extends Controller
         return $user->getAlerts();
     }
 
-    public function setReadStatus($appId, $securityToken, $alertId, $offerId, $status)
+    public function setReadStatus($appId, $securityToken, $alertId, $offerId)
     {
         if($this->container->has('wsh_lapi.users')) {
             $userService = $this->container->get('wsh_lapi.users');
@@ -311,8 +311,6 @@ class AlertController extends Controller
             throw new \Exception('No alert with id '.$alertId.' found');
         } elseif(!$offer) {
             throw new \Exception('No offer with id '.$offerId.' found');
-        } elseif($status < 1 || $status > 2) {
-            throw new \Exception('Status must be 1(downloaded - not readed), or 2(downloaded - readed)');
         }
 
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
@@ -326,7 +324,7 @@ class AlertController extends Controller
             throw new \Exception("In given alert(".$alertId."), offer with id ".$offerId." was not found.");
         }
 
-        $offer->setStatus($status);
+        $offer->setStatus(2);
         $em->persist($offer);
         $em->flush();
 
