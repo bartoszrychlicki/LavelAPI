@@ -13,6 +13,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\OfferRepository")
+ * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("qTravelOfferId")
  */
 class Offer
@@ -117,10 +118,18 @@ class Offer
     private $checkSum;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="lastUpdate", type="datetime")
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
+     */
+    private $lastUpdate;
+
+    /**
      * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="offer_id", cascade={"persist"})
      */
-    protected $readStatus;
-
+    private $readStatus;
 
     /**
      * Get id
@@ -443,6 +452,29 @@ class Offer
     {
         $this->readStatus = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
+    /**
+     * Set lastUpdate
+     *
+     * @param \DateTime $lastUpdate
+     * @return Offer
+     */
+    private function setLastUpdate($lastUpdate)
+    {
+        $this->lastUpdate = $lastUpdate;
+
+        return $this;
+    }
+
+    /**
+     * Get lestUpdate
+     *
+     * @return \DateTime
+     */
+    public function getLastUpdate()
+    {
+        return $this->lastUpdate;
+    }
     
     /**
      * Add readStatus
@@ -480,5 +512,21 @@ class Offer
     public function getReadStatus()
     {
         return $this->readStatus;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->setLastUpdate(new \DateTime());
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate()
+    {
+        $this->setLastUpdate(new \DateTime());
     }
 }
