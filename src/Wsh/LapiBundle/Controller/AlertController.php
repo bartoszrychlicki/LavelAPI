@@ -157,12 +157,6 @@ class AlertController extends Controller
         $offerFromProvider = $provider->handleOfferResponse($response);
         $offerToSerialize = new ArrayCollection();
 
-        $amount = array(
-            "status-0" => 0,
-            "status-1" => 0,
-            "status-2" => 0
-        );
-
         $alertOffertsCount = count($alert->getOffers());
 
         foreach($offerFromProvider->getKeys() as $key) {
@@ -203,14 +197,6 @@ class AlertController extends Controller
             $offerToSerialize->add($offerFromProvider->get($key));
         }
 
-        foreach($alert->getOffers() as $offer) {
-            foreach($offer->getReadStatus() as $ors){
-                if($ors->getAlertId()->getId() == $alertId) {
-                    $amount['status-'.$ors->getStatus()]++;
-                }
-            }
-        }
-
         $em->persist($alert);
         $em->flush();
 
@@ -227,7 +213,6 @@ class AlertController extends Controller
         }
 
         return array(
-            'amount' => $amount,
             'offers' => $offerToSerialize,
             'requestUrl' => $provider->getLastSentRequestUrl()
         );
@@ -272,29 +257,40 @@ class AlertController extends Controller
         $em = $this->getDoctrine()->getManager();
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
-        if(count($user->getAlerts()) == 0) {
-            throw new \Exception('This user has no alerts');
-        }
+        $amount = array(
+            "status-0" => 0,
+            "status-1" => 0,
+            "status-2" => 0
+        );
 
+        if(count($user->getAlerts()) != 0) {
+            foreach($user->getAlerts() as $alert) {
+                if(count($alert->getOffers()) != 0) {
+                    foreach($alert->getOffers() as $offer){
+                        $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                            "offer_id" => $offer->getId(),
+                            "alert_id" => $alert->getId(),
+                        ));
 
+                        $readStatus = new ArrayCollection();
+                        $readStatus->add($offerReadStatus);
 
-        foreach($user->getAlerts() as $alert) {
-            if(count($alert->getOffers()) != 0) {
-                foreach($alert->getOffers() as $offer){
-                    $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
-                        "offer_id" => $offer->getId(),
-                        "alert_id" => $alert->getId(),
-                    ));
+                        $offer->setReadStatus($readStatus);
+                        foreach($offer->getReadStatus() as $ors){
+                            if($ors->getAlertId()->getId() == $alert->getId()) {
+                                $amount['status-'.$ors->getStatus()]++;
+                            }
+                        }
 
-                    $readStatus = new ArrayCollection();
-                    $readStatus->add($offerReadStatus);
-
-                    $offer->setReadStatus($readStatus);
+                    }
                 }
             }
         }
 
-        return $user->getAlerts();
+        return array(
+            'amount' => $amount,
+            'offers' => $user->getAlerts()
+        );
     }
 
     public function setReadStatus($appId, $securityToken, $alertId, $offerId)
