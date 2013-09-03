@@ -86,6 +86,11 @@ class User
     private $leads;
 
     /**
+     * @ORM\OneToMany(targetEntity="OfferFav", mappedBy="user_id", cascade={"persist", "remove"})
+     */
+    private $favourites;
+
+    /**
      * @var boolean
      *
      * @ORM\Column(type="boolean")
@@ -311,6 +316,10 @@ class User
         foreach($this->getLeads() as $lead) {
             $lead->setUser(null);
         }
+
+        foreach($this->getFavourites() as $fav) {
+            $fav->setUserId(null);
+        }
     }
 
     /**
@@ -395,5 +404,38 @@ class User
     public function removeLead(\Wsh\LapiBundle\Entity\Lead $leads)
     {
         $this->leads->removeElement($leads);
+    }
+
+    /**
+     * Add favourites
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferFav $favourites
+     * @return User
+     */
+    public function addFavourite(\Wsh\LapiBundle\Entity\OfferFav $favourites)
+    {
+        $this->favourites[] = $favourites;
+    
+        return $this;
+    }
+
+    /**
+     * Remove favourites
+     *
+     * @param \Wsh\LapiBundle\Entity\OfferFav $favourites
+     */
+    public function removeFavourite(\Wsh\LapiBundle\Entity\OfferFav $favourites)
+    {
+        $this->favourites->removeElement($favourites);
+    }
+
+    /**
+     * Get favourites
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getFavourites()
+    {
+        return $this->favourites;
     }
 }
