@@ -289,7 +289,7 @@ class AlertController extends Controller
 
         return array(
             'amount' => $amount,
-            'offers' => $user->getAlerts()
+            'alerts' => $user->getAlerts()
         );
     }
 
