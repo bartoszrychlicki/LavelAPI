@@ -42,3 +42,9 @@ wa72_json_rpc:
         get_number_of_pages_for_alert:
             service: "wsh_lapi.alerts"
             method: "getNumberOfPages"
+        set_as_favourite:
+            service: "wsh_lapi.content"
+            method: "setAsFavourite"
+        get_amount_of_fav_for_offer:
+            service: "wsh_lapi.content"
+            method: "getAmountOfFav"
