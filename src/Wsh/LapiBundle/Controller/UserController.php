@@ -141,13 +141,8 @@ class UserController extends Controller
         $user = $this->getAppUser($appId, $securityToken);
         $em = $this->getDoctrine()->getManager();
 
-        $offerRepo = $em->getRepository('WshLapiBundle:Offer');
-        $provider = $this->container->get('wsh_lapi.provider.qtravel');
-
-        if(array_key_exists('offerId', $arguments)) {
-            $offer = $offerRepo->findOneByQTravelOfferId($arguments->offerId);
-        } else {
-            throw new \Exception("Parameter 'offerId' must exist in 'arguments'.");
+        if(!array_key_exists('offerProviderSymbol', $arguments)) {
+            throw new \Exception("Parameter 'offerProviderSymbol' must exist in 'arguments'.");
         }
 
         if(!array_key_exists('price', $arguments)) {
@@ -157,14 +152,8 @@ class UserController extends Controller
 
         }
 
-
-        if(!$offer) {
-            throw new \Exception("Offer with id ".$arguments->offerId." not found.");
-        }
-
         $lead = new Lead();
         $lead->setUser($user);
-        $lead->setOffer($offer);
 
         $lead->populateFromObject($arguments);
 
