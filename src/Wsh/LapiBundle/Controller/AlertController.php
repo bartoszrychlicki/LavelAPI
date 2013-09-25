@@ -350,13 +350,7 @@ class AlertController extends Controller
         $params = $alert->getSearchQueryParams();
         $offerFirstPage = $provider->findOffersByParams($params);
         $json = json_decode($offerFirstPage);
-
-        if($json->p->p_pages != 0) {
-            $alert->setNumberOfPages($json->p->p_pages);
-        } else {
-            throw new \Exception('No offers for this alert found.');
-        }
-
+        $alert->setNumberOfPages($json->p->p_pages);
 
         $em->persist($alert);
         $em->flush();
