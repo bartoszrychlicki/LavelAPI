@@ -47,4 +47,7 @@ wa72_json_rpc:
             method: "setAsFavourite"
         get_amount_of_fav_for_offer:
             service: "wsh_lapi.content"
-            method: "getAmountOfFav"
+            method: "getAmountOfFavForOffer"
+        get_user_fav_offers:
+            service: "wsh_lapi.content"
+            method: "getUserFavOffers"

@@ -102,7 +102,7 @@ class ContentController extends Controller
 
     }
 
-    public function getAmountOfFav($offerId)
+    public function getAmountOfFavForOffer($offerId)
     {
         $em = $this->getDoctrine()->getManager();
         $offer = $em->getRepository('WshLapiBundle:Offer')->findOneById($offerId);
@@ -119,5 +119,37 @@ class ContentController extends Controller
             "amount" => count($offerFav)
         );
 
+    }
+
+    public function getUserFavOffers($appId, $securityToken)
+    {
+        if($this->container->has('wsh_lapi.users')) {
+            $userService = $this->container->get('wsh_lapi.users');
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new \Exception('No wsh_lapi.users service registered');
+        }
+
+        $em = $this->getDoctrine()->getManager();
+
+        $offerRepo = $em->getRepository('WshLapiBundle:Offer');
+
+        $offerFav = $em->getRepository('WshLapiBundle:OfferFav')->findBy(array(
+            'user_id' => $user->getId()
+        ));
+
+        $offerAmount = count($offerFav);
+        $offers = array();
+
+        foreach($offerFav as $fav) {
+            $offers[] = $offerRepo->findBy(array(
+               'id' => $fav->getOfferId()
+            ));
+        }
+
+        return array(
+            'amount' => $offerAmount,
+            'offers' => $offers
+        );
     }
 }
