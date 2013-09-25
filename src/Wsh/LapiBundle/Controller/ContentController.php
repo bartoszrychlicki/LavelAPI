@@ -142,9 +142,11 @@ class ContentController extends Controller
         $offers = array();
 
         foreach($offerFav as $fav) {
-            $offers[] = $offerRepo->findBy(array(
-               'id' => $fav->getOfferId()
+            $offer = $offerRepo->findOneBy(array(
+                'id' => $fav->getOfferId()
             ));
+            $offer->setReadStatus(null);
+            $offers[] = $offer;
         }
 
         return array(
