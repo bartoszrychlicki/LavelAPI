@@ -65,7 +65,7 @@ class ContentController extends Controller
         );
     }
 
-    public function setAsFavourite($appId, $securityToken, $offerId)
+    public function setAsFavourite($appId, $securityToken, $offerId, $status = 1)
     {
         if($this->container->has('wsh_lapi.users')) {
             $userService = $this->container->get('wsh_lapi.users');
@@ -86,19 +86,31 @@ class ContentController extends Controller
             'offer_id' => $offerId
         ));
 
-        if($offerFav) {
+        if($offerFav && $status == 1) {
             throw new \Exception('This offer is already set as favourite by this user.');
+        } else if ($status == 1 && !$offerFav) {
+
+            $offerFav = new OfferFav();
+
+            $offerFav->setOfferId($offer);
+            $offerFav->setUserId($user);
+
+            $em->persist($offerFav);
+        } else if ($status == 0 && $offerFav) {
+            $em->remove($offerFav);
+        } else if ($status == 0 && !$offerFav) {
+            throw new \Exception('taj');
+        } else {
+            throw new \Exception("Unknown status.");
         }
 
-        $offerFav = new OfferFav();
-
-        $offerFav->setOfferId($offer);
-        $offerFav->setUserId($user);
-
-        $em->persist($offerFav);
         $em->flush();
 
-        return "Offer set as favourite";
+        if ($status == 1) {
+            return "Offer set as favourite";
+        } elseif ($status == 0) {
+            return "Offer unset as favourite";
+        }
 
     }
 
