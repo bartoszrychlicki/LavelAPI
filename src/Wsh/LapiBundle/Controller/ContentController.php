@@ -99,7 +99,7 @@ class ContentController extends Controller
         } else if ($status == 0 && $offerFav) {
             $em->remove($offerFav);
         } else if ($status == 0 && !$offerFav) {
-            throw new \Exception('taj');
+            throw new \Exception('This offer is not set as favourite by this user.');
         } else {
             throw new \Exception("Unknown status.");
         }
