@@ -179,6 +179,38 @@ class Provider implements OfferProviderInterface
             }
         }
 
+        if(!empty($offer->o_details->o_hcat)) {
+            $offerEnt->setStars($offer->o_details->o_hcat);
+        }
+
+        if(!empty($offer->o_best->o_b_datefr)) {
+            $offerEnt->setTermFrom(new \DateTime($offer->o_best->o_b_datefr));
+        }
+
+        if(!empty($offer->o_best->o_b_dateto)) {
+            $offerEnt->setTermTo(new \DateTime($offer->o_best->o_b_dateto));
+        }
+
+        if(!empty($offer->o_details->o_currency)) {
+            $offerEnt->setCurrency($offer->o_details->o_currency);
+        }
+
+        if(!empty($offer->o_details->o_maintedescs)) {
+            if(count($offer->o_details->o_maintedescs->o_maintedesc) == 1) {
+                $offerEnt->setMaintenance(array($offer->o_details->o_maintedescs->o_maintedesc));
+            } else {
+                $offerEnt->setMaintenance($offer->o_details->o_maintedescs->o_maintedesc);
+            }
+        }
+
+        if(!empty($offer->o_photos)) {
+            if(count($offer->o_photos->o_photo_link) == 1) {
+                $offerEnt->setPhotos(array($offer->o_photos->o_photo_link));
+            } else {
+                $offerEnt->setPhotos($offer->o_photos->o_photo_link);
+            }
+        }
+
         /**
          * checkSum will be used to check changes in offer
          */
@@ -211,6 +243,14 @@ class Provider implements OfferProviderInterface
 
         if(!empty($json["offer"]["o_photos"])) {
             $offer->setLeadPhoto($json["offer"]["o_photos"]["o_photo"][0]["@attributes"]["url"]);
+
+            $photos = array();
+
+            for($i = 0; $i < count($json["offer"]["o_photos"]["o_photo"]); $i++) {
+                $photos[$i] = $json["offer"]["o_photos"]["o_photo"][$i]["@attributes"]["url"];
+            }
+
+            $offer->setPhotos($photos);
         }
 
         $offer->setPrice($json["offer"]["o_bprice"]);
@@ -240,6 +280,19 @@ class Provider implements OfferProviderInterface
                 $offer->setDeparts($json["offer"]["o_departures"]["o_departure"]);
             }
         }
+
+        if(!empty($json["offer"]["o_maintences"])) {
+            if(count($json["offer"]["o_maintences"]["o_maintence"]) == 1) {
+                $offer->setMaintenance(array($json["offer"]["o_maintences"]["o_maintence"]));
+            } else {
+                $offer->setMaintenance($json["offer"]["o_maintences"]["o_maintence"]);
+            }
+        }
+
+        $offer->setTermFrom(new \DateTime($json["trips"]["trip"][0]["t_datefrom"]));
+        $offer->setTermTo(new \DateTime($json["trips"]["trip"][0]["t_dateto"]));
+
+        $offer->setCurrency($json["offer"]["o_currency"]);
 
         $offer->setCheckSum('null');
 

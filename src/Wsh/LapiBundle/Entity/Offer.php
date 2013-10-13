@@ -69,9 +69,44 @@ class Offer
     private $leadPhoto;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(name="photos", type="array")
+     */
+    private $photos;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="termFrom", type="date", nullable=true)
+     */
+    private $termFrom;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="termTo", type="date", nullable=true)
+     */
+    private $termTo;
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(name="maintenance", type="array")
+     */
+    private $maintenance;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="currency", type="string")
+     */
+    private $currency;
+
+    /**
      * @var float
      *
-     * @ORM\Column(name="stars", type="float", nullable=true)
+     * @ORM\Column(name="stars", type="integer", nullable=true)
      */
     private $stars;
 
@@ -528,5 +563,120 @@ class Offer
     public function preUpdate()
     {
         $this->setLastUpdate(new \DateTime());
+    }
+
+    /**
+     * Set photos
+     *
+     * @param array $photos
+     * @return Offer
+     */
+    public function setPhotos($photos)
+    {
+        $this->photos = $photos;
+    
+        return $this;
+    }
+
+    /**
+     * Get photos
+     *
+     * @return array 
+     */
+    public function getPhotos()
+    {
+        return $this->photos;
+    }
+
+    /**
+     * Set termFrom
+     *
+     * @param \DateTime $termFrom
+     * @return Offer
+     */
+    public function setTermFrom($termFrom)
+    {
+        $this->termFrom = $termFrom;
+    
+        return $this;
+    }
+
+    /**
+     * Get termFrom
+     *
+     * @return \DateTime 
+     */
+    public function getTermFrom()
+    {
+        return $this->termFrom;
+    }
+
+    /**
+     * Set termTo
+     *
+     * @param \DateTime $termTo
+     * @return Offer
+     */
+    public function setTermTo($termTo)
+    {
+        $this->termTo = $termTo;
+    
+        return $this;
+    }
+
+    /**
+     * Get termTo
+     *
+     * @return \DateTime 
+     */
+    public function getTermTo()
+    {
+        return $this->termTo;
+    }
+
+    /**
+     * Set maintenance
+     *
+     * @param array $maintenance
+     * @return Offer
+     */
+    public function setMaintenance($maintenance)
+    {
+        $this->maintenance = $maintenance;
+    
+        return $this;
+    }
+
+    /**
+     * Get maintenance
+     *
+     * @return array 
+     */
+    public function getMaintenance()
+    {
+        return $this->maintenance;
+    }
+
+    /**
+     * Set currency
+     *
+     * @param array $currency
+     * @return Offer
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+    
+        return $this;
+    }
+
+    /**
+     * Get currency
+     *
+     * @return array 
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
     }
 }
