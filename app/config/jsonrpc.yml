@@ -51,3 +51,6 @@ wa72_json_rpc:
         get_user_fav_offers:
             service: "wsh_lapi.content"
             method: "getUserFavOffers"
+        send_test_notification:
+            service: "wsh_lapi.users"
+            method: "sendTestNotification"
