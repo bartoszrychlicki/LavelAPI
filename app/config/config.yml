@@ -103,3 +103,9 @@ services:
     buzz.browser:
         class:     Buzz\Browser
         arguments: ['@buzz.client.curl']
+
+rms_push_notifications:
+    ios:
+        sandbox: true
+        pem: ./config/ck.pem
+        passphrase: TravelAlert123
