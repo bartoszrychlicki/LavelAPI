@@ -14,6 +14,7 @@ use JMS\Serializer\Annotation\Type;
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Wsh\LapiBundle\Entity\Repository\AlertRepository")
+ * @ORM\HasLifecycleCallbacks
  * @ExclusionPolicy("none")
  */
 class Alert
@@ -71,6 +72,13 @@ class Alert
      * @ORM\Column(type="integer", nullable=true)
      */
     private $numberOfPages;
+
+    /**
+     * @var DateTime
+     *
+     * @ORM\Column(type="date")
+     */
+    private $lastNotificationDate;
 
     /**
      * @var ArrayCollection Already offers downloaded from API
@@ -295,5 +303,44 @@ class Alert
     public function getReadStatus()
     {
         return $this->readStatus;
+    }
+
+    /**
+     * Set lastNotificationDate
+     *
+     * @param \DateTime $lastNotificationDate
+     * @return Alert
+     */
+    public function setLastNotificationDate($lastNotificationDate)
+    {
+        $this->lastNotificationDate = $lastNotificationDate;
+    
+        return $this;
+    }
+
+    /**
+     * Get lastNotificationDate
+     *
+     * @return \DateTime 
+     */
+    public function getLastNotificationDate()
+    {
+        return $this->lastNotificationDate;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->setLastNotificationDate(new \DateTime());
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate()
+    {
+        $this->setLastNotificationDate(new \DateTime());
     }
 }
