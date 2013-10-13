@@ -350,6 +350,11 @@ class AlertController extends Controller
         $params = $alert->getSearchQueryParams();
         $offerFirstPage = $provider->findOffersByParams($params);
         $json = json_decode($offerFirstPage);
+
+        if (!is_object($json)) {
+            throw new \Exception('Error occurs while trying to connect to provider.');
+        }
+
         $alert->setNumberOfPages($json->p->p_pages);
 
         $em->persist($alert);
