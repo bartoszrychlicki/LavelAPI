@@ -8,6 +8,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\DependencyInjection\Container;
 use Wsh\LapiBundle\Entity\Lead;
 use Wsh\LapiBundle\Entity\User;
+use RMS\PushNotificationsBundle\Message\iOSMessage;
 
 
 /**
@@ -211,5 +212,25 @@ class UserController extends Controller
         $em->flush();
         return $user;
 
+    }
+
+    public function sendTestNotification($appId, $securityToken, $message)
+    {
+        if($this->container->has('wsh_lapi.users')) {
+            $userService = $this->container->get('wsh_lapi.users');
+            $user = $userService->getAppUser($appId, $securityToken);
+        } else {
+            throw new \Exception('No wsh_lapi.users service registered');
+        }
+
+        $notificationService = $this->container->get('rms_push_notifications');
+
+        $notification = new iOSMessage();
+        $notification->setDeviceIdentifier($user->getAppId());
+        $notification->setMessage($message);
+
+        $notificationService->send($notification);
+
+        return "Notification sent";
     }
 }
