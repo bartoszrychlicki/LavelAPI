@@ -118,7 +118,7 @@ class Offer
     private $price;
 
     /**
-     * @var integer
+     * @var array
      *
      * @ORM\Column(name="duration", type="array", nullable=true)
      */
@@ -144,6 +144,13 @@ class Offer
      * @ORM\Column(name="departs", type="array", nullable=true)
      */
     private $departs;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="region", type="string", nullable=true)
+     */
+    private $region;
 
     /**
      * @var string
@@ -364,7 +371,7 @@ class Offer
     /**
      * Set duration
      *
-     * @param integer $duration
+     * @param array $duration
      * @return Offer
      */
     public function setDuration($duration)
@@ -377,7 +384,7 @@ class Offer
     /**
      * Get duration
      *
-     * @return integer 
+     * @return array
      */
     public function getDuration()
     {
@@ -678,5 +685,28 @@ class Offer
     public function getCurrency()
     {
         return $this->currency;
+    }
+
+    /**
+     * Set region
+     *
+     * @param string $region
+     * @return Offer
+     */
+    public function setRegion($region)
+    {
+        $this->region = $region;
+    
+        return $this;
+    }
+
+    /**
+     * Get region
+     *
+     * @return string 
+     */
+    public function getRegion()
+    {
+        return $this->region;
     }
 }

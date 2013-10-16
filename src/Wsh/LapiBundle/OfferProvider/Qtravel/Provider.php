@@ -179,6 +179,10 @@ class Provider implements OfferProviderInterface
             }
         }
 
+        if(!empty($offer->o_details->o_region)) {
+            $offerEnt->setRegion(strip_tags($offer->o_details->o_region));
+        }
+
         if(!empty($offer->o_details->o_hcat)) {
             $offerEnt->setStars($offer->o_details->o_hcat);
         }
@@ -255,9 +259,12 @@ class Provider implements OfferProviderInterface
 
         $offer->setPrice($json["offer"]["o_bprice"]);
 
+        if(!empty($json["offer"]["o_region"])) {
+            $offer->setRegion($json["offer"]["o_region"]);
+        }
 
         if(!empty($json["offer"]["o_country"])) {
-        $offer->setCountry($json["offer"]["o_country"]);
+            $offer->setCountry(strip_tags($json["offer"]["o_country"]));
         }
 
         if(!empty($json["offer"]["o_hcat"])) {
