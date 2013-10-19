@@ -226,7 +226,10 @@ class UserController extends Controller
         $notificationService = $this->container->get('rms_push_notifications');
 
         $notification = new iOSMessage();
-        $notification->setDeviceIdentifier($user->getApplePushToken());
+
+        $deviceID = str_replace('-', '', $user->getAppId());
+
+        $notification->setDeviceIdentifier($deviceID);
 
         foreach ($notificationParams as $key => $value) {
             $methodName = 'set'.ucfirst($key);
