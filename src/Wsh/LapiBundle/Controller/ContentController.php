@@ -78,7 +78,16 @@ class ContentController extends Controller
         $offer = $em->getRepository('WshLapiBundle:Offer')->findOneById($offerId);
 
         if(!$offer) {
-            throw new \Exception('No offer with id '.$offerId.' found');
+            $provider = $this->container->get('wsh_lapi.provider.qtravel');
+            $offerJson = $provider->findOfferById($offerId);
+
+            if ($offerJson) {
+                $offer = $provider->transformSingleOfferToEntity($offerJson);
+                $em->persist($offer);
+                $em->flush();
+            } else {
+                throw new \Exception('No offer with id '.$offerId.' found in '.$provider->getProviderName());
+            }
         }
 
         $offerFav = $em->getRepository('WshLapiBundle:OfferFav')->findOneBy(array(

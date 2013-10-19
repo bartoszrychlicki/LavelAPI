@@ -214,7 +214,7 @@ class UserController extends Controller
 
     }
 
-    public function sendTestNotification($appId, $securityToken, $message)
+    public function sendTestNotification($appId, $securityToken, $notificationParams)
     {
         if($this->container->has('wsh_lapi.users')) {
             $userService = $this->container->get('wsh_lapi.users');
@@ -227,7 +227,13 @@ class UserController extends Controller
 
         $notification = new iOSMessage();
         $notification->setDeviceIdentifier($user->getAppId());
-        $notification->setMessage($message);
+
+        foreach ($notificationParams as $key => $value) {
+            $methodName = 'set'.ucfirst($key);
+            if(method_exists($this, $methodName)) {
+                $notification->$methodName($value);
+            }
+        }
 
         $notificationService->send($notification);
 

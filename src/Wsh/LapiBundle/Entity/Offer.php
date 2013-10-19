@@ -97,6 +97,13 @@ class Offer
     private $maintenance;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(name="maintenanceShort", type="array")
+     */
+    private $maintenanceShort;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="currency", type="string")
@@ -662,6 +669,29 @@ class Offer
     public function getMaintenance()
     {
         return $this->maintenance;
+    }
+
+    /**
+     * Set maintenanceShort
+     *
+     * @param array $maintenanceShort
+     * @return Offer
+     */
+    public function setMaintenanceShort($maintenanceShort)
+    {
+        $this->maintenanceShort = $maintenanceShort;
+
+        return $this;
+    }
+
+    /**
+     * Get maintenanceShort
+     *
+     * @return array
+     */
+    public function getMaintenanceShort()
+    {
+        return $this->maintenanceShort;
     }
 
     /**

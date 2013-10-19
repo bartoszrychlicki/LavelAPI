@@ -140,19 +140,23 @@ class AlertController extends Controller
         }
 
         $maxPage = $alert->getNumberOfPages();
+        $params = $alert->getSearchQueryParams();
+        $params->page = $page;
+        $response = $provider->findOffersByParams($params);
 
-        if(empty($maxPage) || $maxPage === null) {
-            throw new \Exception('First get number of page with "get_number_of_pages_for_alert" method.');
-        } elseif($page == 0 || $page > $maxPage) {
+        if($maxPage === null ) {
+            $json = json_decode($response);
+            $alert->setNumberOfPages($json->p->p_pages);
+            $maxPage = $alert->getNumberOfPages();
+        }
+
+        if($page == 0 || $page > $maxPage) {
             throw new \Exception("'page' parameter for this alert can't be bigger then ".$maxPage
                                     ." and lesser then 1");
         }
         ////////////////////////////////////////////////////////////////////////////////////////////
 
-        $params = $alert->getSearchQueryParams();
 
-        $params->page = $page;
-        $response = $provider->findOffersByParams($params);
 
         $offerFromProvider = $provider->handleOfferResponse($response);
         $offerToSerialize = new ArrayCollection();
@@ -213,6 +217,7 @@ class AlertController extends Controller
         }
 
         return array(
+            'pages' => $maxPage,
             'offers' => $offerToSerialize,
             'requestUrl' => $provider->getLastSentRequestUrl()
         );

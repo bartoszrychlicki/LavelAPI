@@ -43,14 +43,14 @@ class Provider implements OfferProviderInterface
 
     public function findOfferById($id)
     {
-        $url = $this->apiOfferRequestUrl.'&o_code='.$id;
+        $url = $this->apiOfferRequestUrl.'&o_code='.$id.'&phsize=500x500';
         return $this->sendRequest($url);
     }
 
     public function findOfferByName($name)
     {
         // by name we mean the search query
-        $url = $this->apiGetRequestUrl.'&query='.$name;
+        $url = $this->apiGetRequestUrl.'&query='.$name.'&phsize=500x500';
         return $this->sendRequest($url);
     }
 
@@ -64,6 +64,9 @@ class Provider implements OfferProviderInterface
         {
             $urlQueryParams .= '&'.$key.'='.$value;
         }
+
+        $urlQueryParams .= '&phsize=500x500';
+
         return $this->sendRequest($this->apiGetRequestUrl.$urlQueryParams);
 
     }
@@ -207,6 +210,14 @@ class Provider implements OfferProviderInterface
             }
         }
 
+        if(!empty($offer->o_details->o_maintes)) {
+            if(count($offer->o_details->o_maintes->o_mainte) == 1) {
+                $offerEnt->setMaintenanceShort(array($offer->o_details->o_maintes->o_mainte));
+            } else {
+                $offerEnt->setMaintenanceShort($offer->o_details->o_maintes->o_mainte);
+            }
+        }
+
         if(!empty($offer->o_photos)) {
             if(count($offer->o_photos->o_photo_link) == 1) {
                 $offerEnt->setPhotos(array($offer->o_photos->o_photo_link));
@@ -288,12 +299,17 @@ class Provider implements OfferProviderInterface
             }
         }
 
-        if(!empty($json["offer"]["o_maintences"])) {
-            if(count($json["offer"]["o_maintences"]["o_maintence"]) == 1) {
-                $offer->setMaintenance(array($json["offer"]["o_maintences"]["o_maintence"]));
-            } else {
-                $offer->setMaintenance($json["offer"]["o_maintences"]["o_maintence"]);
+        if(!empty($json["offer"]["o_umaintences"])) {
+            $maintence = array();
+            $maintenceShort = array();
+
+            foreach ($json["offer"]["o_umaintences"]["o_umaintence"] as $value) {
+                $maintence[] = $value["description"];
+                $maintenceShort[] = $value["code"];
             }
+
+            $offer->setMaintenance($maintence);
+            $offer->setMaintenanceShort($maintenceShort);
         }
 
         $offer->setTermFrom(new \DateTime($json["trips"]["trip"][0]["t_datefrom"]));
