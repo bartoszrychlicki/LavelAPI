@@ -233,7 +233,7 @@ class UserController extends Controller
 
         foreach ($notificationParams as $key => $value) {
             $methodName = 'set'.ucfirst($key);
-            if(method_exists($this, $methodName)) {
+            if(method_exists($notification, $methodName)) {
                 $notification->$methodName($value);
             }
         }
