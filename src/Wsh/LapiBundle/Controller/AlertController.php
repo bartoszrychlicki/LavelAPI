@@ -298,12 +298,19 @@ class AlertController extends Controller
 
                     }
                 }
+
+                $alert->setOffersNew($alertORS[$alert->getId()]['status-0']);
+                $alert->setOffersUnread($alertORS[$alert->getId()]['status-1']);
+                $alert->setOffersRead($alertORS[$alert->getId()]['status-2']);
+                $em->persist($alert);
+
             }
         }
 
+        $em->flush();
+
         return array(
             'amount' => $amount,
-            'offersReadStatus' => $alertORS,
             'alerts' => $user->getAlerts()
         );
     }

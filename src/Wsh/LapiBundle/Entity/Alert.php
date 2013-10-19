@@ -81,6 +81,27 @@ class Alert
     private $lastNotificationDate;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $offersNew;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $offersUnread;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $offersRead;
+
+    /**
      * @var ArrayCollection Already offers downloaded from API
      * @ORM\ManyToMany(targetEntity="Wsh\LapiBundle\Entity\Offer", cascade={"persist"})
      */
@@ -342,5 +363,74 @@ class Alert
     public function preUpdate()
     {
         $this->setLastNotificationDate(new \DateTime());
+    }
+
+    /**
+     * Set offersNew
+     *
+     * @param integer $offersNew
+     * @return Alert
+     */
+    public function setOffersNew($offersNew)
+    {
+        $this->offersNew = $offersNew;
+    
+        return $this;
+    }
+
+    /**
+     * Get offersNew
+     *
+     * @return integer 
+     */
+    public function getOffersNew()
+    {
+        return $this->offersNew;
+    }
+
+    /**
+     * Set offersUnread
+     *
+     * @param integer $offersUnread
+     * @return Alert
+     */
+    public function setOffersUnread($offersUnread)
+    {
+        $this->offersUnread = $offersUnread;
+    
+        return $this;
+    }
+
+    /**
+     * Get offersUnread
+     *
+     * @return integer 
+     */
+    public function getOffersUnread()
+    {
+        return $this->offersUnread;
+    }
+
+    /**
+     * Set offersRead
+     *
+     * @param integer $offersRead
+     * @return Alert
+     */
+    public function setOffersRead($offersRead)
+    {
+        $this->offersRead = $offersRead;
+    
+        return $this;
+    }
+
+    /**
+     * Get offersRead
+     *
+     * @return integer 
+     */
+    public function getOffersRead()
+    {
+        return $this->offersRead;
     }
 }
