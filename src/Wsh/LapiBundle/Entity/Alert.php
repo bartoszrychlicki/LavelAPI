@@ -358,14 +358,6 @@ class Alert
     }
 
     /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setLastNotificationDate(new \DateTime());
-    }
-
-    /**
      * Set offersNew
      *
      * @param integer $offersNew
