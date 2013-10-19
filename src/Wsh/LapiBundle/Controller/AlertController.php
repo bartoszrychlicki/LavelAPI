@@ -267,9 +267,17 @@ class AlertController extends Controller
             "status-1" => 0,
             "status-2" => 0
         );
+        $alertORS = array();
 
         if(count($user->getAlerts()) != 0) {
             foreach($user->getAlerts() as $alert) {
+
+                $alertORS[$alert->getId()] = array(
+                    "status-0" => 0,
+                    "status-1" => 0,
+                    "status-2" => 0
+                );
+
                 if(count($alert->getOffers()) != 0) {
                     foreach($alert->getOffers() as $offer){
                         $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
@@ -284,6 +292,7 @@ class AlertController extends Controller
                         foreach($offer->getReadStatus() as $ors){
                             if($ors->getAlertId()->getId() == $alert->getId()) {
                                 $amount['status-'.$ors->getStatus()]++;
+                                $alertORS[$alert->getId()]['status-'.$ors->getStatus()]++;
                             }
                         }
 
@@ -294,6 +303,7 @@ class AlertController extends Controller
 
         return array(
             'amount' => $amount,
+            'offersReadStatus' => $alertORS,
             'alerts' => $user->getAlerts()
         );
     }
