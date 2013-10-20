@@ -227,9 +227,11 @@ class UserController extends Controller
 
         $notification = new iOSMessage();
 
-        /*$deviceID = str_replace('-', '', $user->getAppId());;*/
-
-        $notification->setDeviceIdentifier($user->getApplePushToken());
+        if($user->getApplePushToken() !== null) {
+            $notification->setDeviceIdentifier($user->getApplePushToken());
+        } else {
+            throw new \Exception("Apple Push Token for given user is not set");
+        }
 
         foreach ($notificationParams as $key => $value) {
             $methodName = 'set'.ucfirst($key);
