@@ -59,14 +59,16 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
                         if (is_object($json)) {
                             $numOfOffers = $json->p->p_offers;
+                            $numOfPages = $json->p->p_pages;
+                            $alert->setNumberOfPagesInUpdate($numOfPages);
+                            $alert->setPreviousNotificationDate($alert->getLastNotificationDate());
+                            $alert->setLastNotificationDate(new \DateTime());
 
                             if ($numOfOffers != 0) {
                                 $numberOfUpdatedAlerts++;
                                 $numberOfUpdatedOffers += $numOfOffers;
                             }
                         }
-
-                        $alert->setLastNotificationDate(new \DateTime());
                         $em->persist($alert);
                     }
                 }
@@ -99,6 +101,7 @@ class PushNotificationsCommand extends ContainerAwareCommand
         }
 
         $em->flush();
+
         $output->writeln(sprintf('<fg=green>%s</fg=green> notifications were sent.', $numberOfSentNotifications)); /* TEMP */
 
     }

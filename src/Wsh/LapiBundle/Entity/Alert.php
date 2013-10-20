@@ -7,6 +7,7 @@ use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Exclude;
 use JMS\Serializer\Annotation\Expose;
 use JMS\Serializer\Annotation\Type;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 
 /**
@@ -67,11 +68,18 @@ class Alert
     private $name;
 
     /**
-     * @var string
+     * @var integer
      *
      * @ORM\Column(type="integer", nullable=true)
      */
     private $numberOfPages;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $numberOfPagesInUpdate;
 
     /**
      * @var DateTime
@@ -79,6 +87,13 @@ class Alert
      * @ORM\Column(type="date")
      */
     private $lastNotificationDate;
+
+    /**
+     * @var DateTime
+     *
+     * @ORM\Column(type="date")
+     */
+    private $previousNotificationDate;
 
     /**
      * @var string
@@ -255,6 +270,22 @@ class Alert
     }
 
     /**
+     * @param integer $numberOfPagesInUpdate
+     */
+    public function setNumberOfPagesInUpdate($numberOfPagesInUpdate)
+    {
+        $this->numberOfPagesInUpdate = $numberOfPagesInUpdate;
+    }
+
+    /**
+     * @return integer
+     */
+    public function getNumberOfPagesInUpdate()
+    {
+        return $this->numberOfPagesInUpdate;
+    }
+
+    /**
      * @param \Wsh\LapiBundle\Entity\ArrayCollection $offers
      */
     public function setOffers($offers)
@@ -350,11 +381,35 @@ class Alert
     }
 
     /**
+     * Set previousNotificationDate
+     *
+     * @param \DateTime $previousNotificationDate
+     * @return Alert
+     */
+    public function setPreviousNotificationDate($previousNotificationDate)
+    {
+        $this->previousNotificationDate = $previousNotificationDate;
+
+        return $this;
+    }
+
+    /**
+     * Get previousNotificationDate
+     *
+     * @return \DateTime
+     */
+    public function getPreviousNotificationDate()
+    {
+        return $this->previousNotificationDate;
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function prePersist()
     {
         $this->setLastNotificationDate(new \DateTime());
+        $this->setPreviousNotificationDate(new \DateTime());
     }
 
     /**

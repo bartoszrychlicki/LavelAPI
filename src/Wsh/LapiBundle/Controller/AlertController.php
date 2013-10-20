@@ -111,7 +111,7 @@ class AlertController extends Controller
      * @return array
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function getAllOffersForAlert($appId, $securityToken, $alertId, $page)
+    public function getAllOffersForAlert($appId, $securityToken, $alertId, $page, $date = false)
     {
         set_time_limit(0);
 
@@ -142,6 +142,12 @@ class AlertController extends Controller
         $maxPage = $alert->getNumberOfPages();
         $params = $alert->getSearchQueryParams();
         $params->page = $page;
+
+        if($date) {
+            $params->f_adate_min = $alert->getPreviousNotificationDate()->format('Y-m-d');
+            $maxPage = $alert->getNumberOfPagesInUpdate();
+        }
+
         $response = $provider->findOffersByParams($params);
 
         if($maxPage === null ) {
@@ -192,10 +198,12 @@ class AlertController extends Controller
                 $offerReadStatus = new OfferReadStatus();
                 $offerReadStatus->setAlertId($alert);
                 $offerReadStatus->setOfferId($offerFromProvider->get($key));
-                $offerReadStatus->setStatus(0);
+                $offerReadStatus->setStatus(1);
                 $offerReadStatus->setTempOfferId($offerFromProvider->get($key)->getId());
 
                 $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
+            } else if ($offerReadStatus && $date) {
+                $offerReadStatus->setStatus(1);
             }
 
             $offerToSerialize->add($offerFromProvider->get($key));
@@ -222,6 +230,13 @@ class AlertController extends Controller
             'requestUrl' => $provider->getLastSentRequestUrl()
         );
 
+    }
+
+    public function getAllUpdatedOffersForAlert($appId, $securityToken, $alertId, $page)
+    {
+        $response = $this->getAllOffersForAlert($appId, $securityToken, $alertId, $page, true);
+
+        return $response;
     }
 
     /**
