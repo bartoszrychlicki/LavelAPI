@@ -129,7 +129,9 @@ class ContentController extends Controller
         $offer = $em->getRepository('WshLapiBundle:Offer')->findOneById($offerId);
 
         if(!$offer) {
-            throw new \Exception('No offer with id '.$offerId.' found');
+            return array(
+                "amount" => 0
+            );
         }
 
         $offerFav = $em->getRepository('WshLapiBundle:OfferFav')->findBy(array(
