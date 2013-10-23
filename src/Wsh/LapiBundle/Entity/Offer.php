@@ -176,6 +176,13 @@ class Offer
     private $lastUpdate;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="addDate", type="datetime")
+     */
+    private $addDate;
+
+    /**
      * @ORM\OneToMany(targetEntity="OfferReadStatus", mappedBy="offer_id", cascade={"persist"})
      */
     private $readStatus;
@@ -508,7 +515,7 @@ class Offer
      * @param \DateTime $lastUpdate
      * @return Offer
      */
-    private function setLastUpdate($lastUpdate)
+    public function setLastUpdate($lastUpdate)
     {
         $this->lastUpdate = $lastUpdate;
 
@@ -516,13 +523,36 @@ class Offer
     }
 
     /**
-     * Get lestUpdate
+     * Get lastUpdate
      *
      * @return \DateTime
      */
     public function getLastUpdate()
     {
         return $this->lastUpdate;
+    }
+
+    /**
+     * Set addDate
+     *
+     * @param \DateTime $addDate
+     * @return Offer
+     */
+    public function setAddDate($addDate)
+    {
+        $this->addDate = $addDate;
+
+        return $this;
+    }
+
+    /**
+     * Get addDate
+     *
+     * @return \DateTime
+     */
+    public function getAddDate()
+    {
+        return $this->addDate;
     }
     
     /**
@@ -569,6 +599,7 @@ class Offer
     public function prePersist()
     {
         $this->setLastUpdate(new \DateTime());
+        $this->setAddDate(new \DateTime());
     }
 
     /**

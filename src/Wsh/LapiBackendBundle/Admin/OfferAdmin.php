@@ -32,6 +32,7 @@ class OfferAdmin extends Admin
             ->addIdentifier('name')
             ->add('isHotDeal')
             ->add('isFeatured')
+            ->add('addDate')
         ;
     }
 }
