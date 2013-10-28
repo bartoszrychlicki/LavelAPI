@@ -188,6 +188,13 @@ class Offer
     private $readStatus;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="link", type="string")
+     */
+    private $link;
+
+    /**
      * Get id
      *
      * @return integer
@@ -769,5 +776,28 @@ class Offer
     public function getRegion()
     {
         return $this->region;
+    }
+
+    /**
+     * Set link
+     *
+     * @param string $link
+     * @return Offer
+     */
+    public function setLink($link)
+    {
+        $this->link = $link;
+
+        return $this;
+    }
+
+    /**
+     * Get link
+     *
+     * @return string
+     */
+    public function getLink()
+    {
+        return $this->link;
     }
 }

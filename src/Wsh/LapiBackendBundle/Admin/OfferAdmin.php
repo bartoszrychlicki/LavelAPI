@@ -30,6 +30,9 @@ class OfferAdmin extends Admin
     {
         $listMapper
             ->addIdentifier('name')
+            ->add('link', null, array(
+                'template' => 'WshLapiBackendBundle:OfferAdmin:link_list.html.twig'
+            ))
             ->add('isHotDeal')
             ->add('isFeatured')
             ->add('addDate')

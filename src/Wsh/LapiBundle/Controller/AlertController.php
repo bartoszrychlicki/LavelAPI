@@ -153,8 +153,11 @@ class AlertController extends Controller
         if($maxPage === null ) {
             $json = json_decode($response);
             $alert->setNumberOfPages($json->p->p_pages);
+            $alert->setOffersTotal($json->p->p_offers);
             $maxPage = $alert->getNumberOfPages();
         }
+
+        $numberOfOffers = $alert->getOffersTotal();
 
         if($page == 0 || $page > $maxPage) {
             throw new \Exception("'page' parameter for this alert can't be bigger then ".$maxPage
@@ -226,6 +229,7 @@ class AlertController extends Controller
 
         return array(
             'pages' => $maxPage,
+            'numberOfOffers' => $numberOfOffers,
             'offers' => $offerToSerialize,
             'requestUrl' => $provider->getLastSentRequestUrl()
         );

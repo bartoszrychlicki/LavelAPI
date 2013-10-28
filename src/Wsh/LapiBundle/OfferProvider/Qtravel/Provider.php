@@ -218,6 +218,10 @@ class Provider implements OfferProviderInterface
             }
         }
 
+        if(!empty($offer->o_details->o_link)) {
+            $offerEnt->setLink($offer->o_details->o_link);
+        }
+
         if(!empty($offer->o_photos)) {
             if(count($offer->o_photos->o_photo_link) == 1) {
                 $offerEnt->setPhotos(array($offer->o_photos->o_photo_link));
@@ -311,6 +315,11 @@ class Provider implements OfferProviderInterface
             $offer->setMaintenance($maintence);
             $offer->setMaintenanceShort($maintenceShort);
         }
+
+        if(!empty($json["offer"]["o_link"])) {
+            $offer->setLink($json["offer"]["o_link"]);
+        }
+
 
         $offer->setTermFrom(new \DateTime($json["trips"]["trip"][0]["t_datefrom"]));
         $offer->setTermTo(new \DateTime($json["trips"]["trip"][0]["t_dateto"]));

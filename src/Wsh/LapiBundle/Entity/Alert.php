@@ -110,11 +110,18 @@ class Alert
     private $offersUnread;
 
     /**
+    * @var string
+    *
+    * @ORM\Column(type="integer", nullable=true)
+    */
+    private $offersRead;
+
+    /**
      * @var string
      *
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $offersRead;
+    private $offersTotal;
 
     /**
      * @var ArrayCollection Already offers downloaded from API
@@ -479,5 +486,28 @@ class Alert
     public function getOffersRead()
     {
         return $this->offersRead;
+    }
+
+    /**
+     * Set offersTotal
+     *
+     * @param integer $offersTotal
+     * @return Alert
+     */
+    public function setOffersTotal($offersTotal)
+    {
+        $this->offersTotal = $offersTotal;
+
+        return $this;
+    }
+
+    /**
+     * Get offersTotal
+     *
+     * @return integer
+     */
+    public function getOffersTotal()
+    {
+        return $this->offersTotal;
     }
 }
