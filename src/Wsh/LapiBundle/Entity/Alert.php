@@ -100,13 +100,6 @@ class Alert
      *
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $offersNew;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="integer", nullable=true)
-     */
     private $offersUnread;
 
     /**
@@ -417,29 +410,6 @@ class Alert
     {
         $this->setLastNotificationDate(new \DateTime());
         $this->setPreviousNotificationDate(new \DateTime());
-    }
-
-    /**
-     * Set offersNew
-     *
-     * @param integer $offersNew
-     * @return Alert
-     */
-    public function setOffersNew($offersNew)
-    {
-        $this->offersNew = $offersNew;
-    
-        return $this;
-    }
-
-    /**
-     * Get offersNew
-     *
-     * @return integer 
-     */
-    public function getOffersNew()
-    {
-        return $this->offersNew;
     }
 
     /**

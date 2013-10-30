@@ -41,6 +41,17 @@ class AlertController extends Controller
         $alert->setSearchQueryParams($searchParams);
         $alert->setName($name);
 
+        $params = $searchParams;
+        $params->page = 1;
+
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
+        $response = $provider->findOffersByParams($params);
+        $json = json_decode($response);
+        $alert->setNumberOfPages($json->p->p_pages);
+        $alert->setOffersTotal($json->p->p_offers);
+        $alert->setOffersUnread($json->p->p_offers);
+        $alert->setOffersRead(0);
+
         $em->persist($alert);
         $em->flush();
 
@@ -150,8 +161,20 @@ class AlertController extends Controller
 
         $response = $provider->findOffersByParams($params);
 
+        $json = json_decode($response);
+
+        if(!empty($json)) {
+            if(!($json->offers->o)) {
+                throw new \Exception('Response does not have any offers added to JSON object in '.__FUNCTION__);
+            }
+            if(count($json->offers->o) <= 0) {
+                throw new \Exception('Array with offers on JSON response object is empty in '.__FUNCTION__);
+            }
+            goto responseOk;
+        }
+        responseOk:
+
         if($maxPage === null ) {
-            $json = json_decode($response);
             $alert->setNumberOfPages($json->p->p_pages);
             $alert->setOffersTotal($json->p->p_offers);
             $maxPage = $alert->getNumberOfPages();
@@ -167,7 +190,7 @@ class AlertController extends Controller
 
 
 
-        $offerFromProvider = $provider->handleOfferResponse($response);
+        $offerFromProvider = $provider->handleOfferResponse($json);
         $offerToSerialize = new ArrayCollection();
 
         $alertOffertsCount = count($alert->getOffers());
@@ -201,12 +224,12 @@ class AlertController extends Controller
                 $offerReadStatus = new OfferReadStatus();
                 $offerReadStatus->setAlertId($alert);
                 $offerReadStatus->setOfferId($offerFromProvider->get($key));
-                $offerReadStatus->setStatus(1);
+                $offerReadStatus->setIsRead(false);
                 $offerReadStatus->setTempOfferId($offerFromProvider->get($key)->getId());
 
                 $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
             } else if ($offerReadStatus && $date) {
-                $offerReadStatus->setStatus(1);
+                $offerReadStatus->setIsRead(false);
             }
 
             $offerToSerialize->add($offerFromProvider->get($key));
@@ -225,6 +248,14 @@ class AlertController extends Controller
             $readStatus->add($offerReadStatus);
 
             $offer->setReadStatus($readStatus);
+        }
+
+        if($alert->getOffersTotal() != $json->p->p_offers) {
+            $alert->setOffersTotal($json->p->p_offers);
+            $alert->setOffersUnread($alert->getOffersTotal() - $alert->getOffersRead());
+            $numberOfOffers = $alert->getOffersTotal();
+            $em->persist($alert);
+            $em->flush();
         }
 
         return array(
@@ -282,19 +313,18 @@ class AlertController extends Controller
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
         $amount = array(
-            "status-0" => 0,
-            "status-1" => 0,
-            "status-2" => 0
+            'totalOffersRead' => 0,
+            'totalOffersUnread' => 0,
+            'totalOffers' => 0
         );
+
         $alertORS = array();
 
         if(count($user->getAlerts()) != 0) {
             foreach($user->getAlerts() as $alert) {
 
                 $alertORS[$alert->getId()] = array(
-                    "status-0" => 0,
-                    "status-1" => 0,
-                    "status-2" => 0
+                    "offersRead" => 0,
                 );
 
                 if(count($alert->getOffers()) != 0) {
@@ -310,18 +340,22 @@ class AlertController extends Controller
                         $offer->setReadStatus($readStatus);
                         foreach($offer->getReadStatus() as $ors){
                             if($ors->getAlertId()->getId() == $alert->getId()) {
-                                $amount['status-'.$ors->getStatus()]++;
-                                $alertORS[$alert->getId()]['status-'.$ors->getStatus()]++;
+                                if($ors->getIsRead()) {
+                                    $alertORS[$alert->getId()]['offersRead']++;
+                                }
                             }
                         }
 
                     }
                 }
 
-                $alert->setOffersNew($alertORS[$alert->getId()]['status-0']);
-                $alert->setOffersUnread($alertORS[$alert->getId()]['status-1']);
-                $alert->setOffersRead($alertORS[$alert->getId()]['status-2']);
+                $alert->setOffersRead($alertORS[$alert->getId()]['offersRead']);
+                $alert->setOffersUnread($alert->getOffersTotal() - $alert->getOffersRead());
                 $em->persist($alert);
+
+                $amount['totalOffersRead'] += $alert->getOffersRead();
+                $amount['totalOffersUnread'] += $alert->getOffersUnread();
+                $amount['totalOffers'] += $alert->getOffersTotal();
 
             }
         }
@@ -365,8 +399,11 @@ class AlertController extends Controller
             throw new \Exception("In given alert(".$alertId."), offer with id ".$offerId." was not found.");
         }
 
-        $offer->setStatus(2);
+        $offer->setIsRead(true);
+        $alert->setOffersRead($alert->getOffersRead() + 1);
+        $alert->setOffersUnread($alert->getOffersUnread() + 1);
         $em->persist($offer);
+        $em->persist($alert);
         $em->flush();
 
         return 'Status changed';

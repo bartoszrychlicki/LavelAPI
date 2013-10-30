@@ -101,41 +101,30 @@ class Provider implements OfferProviderInterface
         return $this->lastSentRequestUrl;
     }
 
-    public function handleOfferResponse($response) {
+    public function handleOfferResponse($json) {
         $offerRepo = $this->doctrine->getRepository('WshLapiBundle:Offer');
 
-        $json = json_decode($response);
-        if(!empty($json)) {
-            if(!($json->offers->o)) {
-                throw new \Exception('Response does not have any offers added to JSON object in '.__FUNCTION__);
-            }
-            if(count($json->offers->o) <= 0) {
-                throw new \Exception('Array with offers on JSON response object is empty in '.__FUNCTION__);
-            }
+        $i=1;
 
-            $i=1;
+        $collection = new ArrayCollection();
+        foreach($json->offers->o as $offer) {
+            $checkSum = md5(serialize($offer));
+            $offerDB = $offerRepo->findOneByQTravelOfferId($offer->o_details->o_code);
 
-            $collection = new ArrayCollection();
-            foreach($json->offers->o as $offer) {
-                $checkSum = md5(serialize($offer));
-                $offerDB = $offerRepo->findOneByQTravelOfferId($offer->o_details->o_code);
-
-                if($offerDB){
-                    if($offerDB->getCheckSum() != $checkSum){
-                        $collection->set(200 + $i, $this->transformToEntity($offer, $offerDB));
-                    } else {
-                        $collection->set(100 + $i, $offerDB);
-                    }
+            if($offerDB){
+                if($offerDB->getCheckSum() != $checkSum){
+                    $collection->set(200 + $i, $this->transformToEntity($offer, $offerDB));
                 } else {
-                    $collection->set($i, $this->transformToEntity($offer));
+                    $collection->set(100 + $i, $offerDB);
                 }
-                $i++;
+            } else {
+                $collection->set($i, $this->transformToEntity($offer));
             }
-            $this->doctrine->flush();
-            return $collection;
-        } else {
-            return null;
+            $i++;
         }
+        $this->doctrine->flush();
+
+        return $collection;
     }
 
     public function transformToEntity($offer, &$offerDB = null)

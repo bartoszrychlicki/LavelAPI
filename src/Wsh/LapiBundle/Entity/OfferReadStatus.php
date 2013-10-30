@@ -44,11 +44,11 @@ class OfferReadStatus
     protected $offer_id;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer")
+     * @ORM\Column(name="isRead", type="boolean")
      */
-    private $status;
+    private $isRead;
 
     /**
      * @var integer
@@ -115,26 +115,26 @@ class OfferReadStatus
     }
 
     /**
-     * Set status
+     * Set isRead
      *
-     * @param integer $status
+     * @param bool $isRead
      * @return OfferReadStatus
      */
-    public function setStatus($status)
+    public function setIsRead($isRead)
     {
-        $this->status = $status;
+        $this->isRead = $isRead;
     
         return $this;
     }
 
     /**
-     * Get status
+     * Get isRead
      *
-     * @return integer 
+     * @return bool
      */
-    public function getStatus()
+    public function getIsRead()
     {
-        return $this->status;
+        return $this->isRead;
     }
 
     /**
