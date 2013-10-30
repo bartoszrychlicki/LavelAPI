@@ -77,6 +77,8 @@ class AlertController extends Controller
         $em->remove($alert);
         $em->flush();
 
+
+
         return "OK";
     }
 
@@ -98,16 +100,41 @@ class AlertController extends Controller
 
         // now pass new values to object
         if(count($newValues) > 0) {
-            foreach($newValues as $key => $newValues) {
+            foreach($newValues as $key => $newValue) {
                 // check if set metthod exists
                 $method = 'set'.ucfirst($key);
                 if(method_exists($alert, $method)) {
-                    $alert->$method($newValues);
+                    $alert->$method($newValue);
                 }
             }
         }
         $alert->setNumberOfPages(null);
+
+
+        $params = $newValues->searchQueryParams;
+        $params->page = 1;
+
+        $provider = $this->container->get('wsh_lapi.provider.qtravel');
+        $response = $provider->findOffersByParams($params);
+        $json = json_decode($response);
+        $alert->setNumberOfPages($json->p->p_pages);
+        $alert->setOffersTotal($json->p->p_offers);
+        $alert->setOffersUnread($json->p->p_offers);
+        $alert->setOffersRead(0);
+
+        $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
+
+        foreach($alert->getOffers() as $offer){
+            $offerReadStatus = $offerReadStatusRepo->findOneBy(array(
+                "offer_id" => $offer->getId(),
+                "alert_id" => $alertId
+            ));
+            $em->remove($offerReadStatus);
+        }
+
+        $alert->setOffers(null);
         $em->persist($alert);
+
         $em->flush();
 
         return "Alert ".$alertId." updated.";
@@ -244,10 +271,8 @@ class AlertController extends Controller
                 "alert_id" => $alertId
             ));
 
-            $readStatus = new ArrayCollection();
-            $readStatus->add($offerReadStatus);
-
-            $offer->setReadStatus($readStatus);
+            $offer->setReadStatus(null);
+            $offer->setIsRead($offerReadStatus->getIsRead());
         }
 
         if($alert->getOffersTotal() != $json->p->p_offers) {
@@ -334,18 +359,12 @@ class AlertController extends Controller
                             "alert_id" => $alert->getId(),
                         ));
 
-                        $readStatus = new ArrayCollection();
-                        $readStatus->add($offerReadStatus);
+                        $offer->setReadStatus(null);
+                        $offer->setIsRead($offerReadStatus->getIsRead());
 
-                        $offer->setReadStatus($readStatus);
-                        foreach($offer->getReadStatus() as $ors){
-                            if($ors->getAlertId()->getId() == $alert->getId()) {
-                                if($ors->getIsRead()) {
-                                    $alertORS[$alert->getId()]['offersRead']++;
-                                }
-                            }
+                        if($offerReadStatus->getIsRead()) {
+                            $alertORS[$alert->getId()]['offersRead']++;
                         }
-
                     }
                 }
 

@@ -195,6 +195,13 @@ class Offer
     private $link;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="isRead", type="boolean", nullable=true)
+     */
+    private $isRead;
+
+    /**
      * Get id
      *
      * @return integer
@@ -799,5 +806,28 @@ class Offer
     public function getLink()
     {
         return $this->link;
+    }
+
+    /**
+     * Set isRead
+     *
+     * @param bool $isRead
+     * @return OfferReadStatus
+     */
+    public function setIsRead($isRead)
+    {
+        $this->isRead = $isRead;
+
+        return $this;
+    }
+
+    /**
+     * Get isRead
+     *
+     * @return bool
+     */
+    public function getIsRead()
+    {
+        return $this->isRead;
     }
 }

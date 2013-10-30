@@ -35,6 +35,7 @@ class ContentController extends Controller
 
         foreach($featuredOffers as $offer) {
             $offer->setReadStatus(null);
+            $offer->setIsRead(null);
         }
 
         return array(
@@ -58,6 +59,7 @@ class ContentController extends Controller
 
         foreach($hotDealOffers as $offer) {
             $offer->setReadStatus(null);
+            $offer->setIsRead(null);
         }
 
         return array(
@@ -169,6 +171,7 @@ class ContentController extends Controller
                 'id' => $fav->getOfferId()
             ));
             $offer->setReadStatus(null);
+            $offer->setIsRead(null);
             $offers[] = $offer;
         }
 
