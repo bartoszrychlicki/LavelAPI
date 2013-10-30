@@ -58,7 +58,9 @@ class Provider implements OfferProviderInterface
     {
         $urlQueryParams = "";
         if(!array_key_exists('query', $params)) {
-            throw new \Exception('Search params should atleast have "query" param');
+            if(!array_key_exists('empty_q', $params) || $params->empty_q == 'f') {
+                throw new \Exception('Search params should atleast have "query" param, or "empty_q" param set to "t"');
+            }
         }
         foreach($params as $key => $value)
         {
