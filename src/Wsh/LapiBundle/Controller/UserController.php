@@ -240,7 +240,11 @@ class UserController extends Controller
             }
         }
 
-        $notificationService->send($notification);
+        try {
+            $notificationService->send($notification);
+        } catch (\RuntimeException $e) {
+            throw new \Exception($e->getMessage());
+        }
 
         return "Notification sent";
     }
