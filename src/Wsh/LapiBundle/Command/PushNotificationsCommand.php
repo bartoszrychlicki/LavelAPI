@@ -118,6 +118,7 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
         $this->recalculateAlerts();
         $this->sendNotifications();
+        $this->resetAlertsUpdatedOffers();
 
     }
 
@@ -246,5 +247,19 @@ class PushNotificationsCommand extends ContainerAwareCommand
         }
 
         $this->output->writeln(sprintf("Zostalo wyslanych %s powiadomien.", $numbrOfSentNotif));
+    }
+
+    private function resetAlertsUpdatedOffers()
+    {
+        $alertRepo = $this->em->getRepository('WshLapiBundle:Alert');
+        $alerts = $alertRepo->findAll();
+
+        foreach ($alerts as $alert) {
+            $alert->setOffersWithUpdatedPrice(0);
+            $this->em->persist($alert);
+        }
+
+        $this->em->flush();
+
     }
 }
