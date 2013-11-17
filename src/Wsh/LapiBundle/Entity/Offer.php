@@ -623,6 +623,7 @@ class Offer
     {
         $this->setAddDate(new \DateTime());
         $this->setLastUpdate(new \DateTime());
+        $this->setIsPriceLastUpdated(false);
     }
 
     /**
