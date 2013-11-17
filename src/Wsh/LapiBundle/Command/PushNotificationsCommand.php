@@ -59,7 +59,6 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
         $numOfOffers = $json->p->p_offers;
         $numOfPages = $json->p->p_pages;
-        $numOfPages = 10;
         $estimatedTimeSec = $numOfPages * 6;
 
         $output->writeln("");
