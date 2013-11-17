@@ -37,7 +37,7 @@ class OfferFav
     protected $offer_id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="user_id")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="favourites")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
      * @Exclude
      */

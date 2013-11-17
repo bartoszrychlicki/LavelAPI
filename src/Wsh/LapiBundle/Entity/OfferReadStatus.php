@@ -30,14 +30,14 @@ class OfferReadStatus
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Alert", inversedBy="alert_id", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Alert", inversedBy="readStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="alert_id", referencedColumnName="id")
      * @Exclude
      */
     protected $alert_id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Offer", inversedBy="offer_id", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Offer", inversedBy="readStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="offer_id", referencedColumnName="id", nullable=true)
      * @Exclude
      */

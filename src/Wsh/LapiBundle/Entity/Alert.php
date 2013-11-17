@@ -32,9 +32,9 @@ class Alert
     /**
      * @var integer
      *
-     * @ORM\Column(name="newOffersCount", type="integer", nullable=true)
+     * @ORM\Column(name="offersWithUpdatedPrice", type="integer", nullable=true)
      */
-    private $newOffersCount;
+    private $offersWithUpdatedPrice;
 
     /**
      * @var stdObject
@@ -145,26 +145,26 @@ class Alert
     }
 
     /**
-     * Set newOffersCount
+     * Set offersWithUpdatedPrice
      *
-     * @param integer $newOffersCount
+     * @param integer $offersWithUpdatedPrice
      * @return Alert
      */
-    public function setNewOffersCount($newOffersCount)
+    public function setOffersWithUpdatedPrice($offersWithUpdatedPrice)
     {
-        $this->newOffersCount = $newOffersCount;
+        $this->offersWithUpdatedPrice = $offersWithUpdatedPrice;
     
         return $this;
     }
 
     /**
-     * Get newOffersCount
+     * Get offersWithUpdatedPrice
      *
      * @return integer 
      */
-    public function getNewOffersCount()
+    public function getOffersWithUpdatedPrice()
     {
-        return $this->newOffersCount;
+        return $this->offersWithUpdatedPrice;
     }
 
     /**

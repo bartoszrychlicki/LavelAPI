@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Form\Extension\Core\DataTransformer\BooleanToStringTransformer;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use JMS\Serializer\Annotation\Exclude;
 
 
 /**
@@ -200,6 +201,14 @@ class Offer
      * @ORM\Column(name="isRead", type="boolean", nullable=true)
      */
     private $isRead;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(name="isPriceLastUpdated", type="boolean")
+     * @Exclude
+     */
+    private $isPriceLastUpdated;
 
     /**
      * Get id
@@ -612,8 +621,8 @@ class Offer
      */
     public function prePersist()
     {
-        $this->setLastUpdate(new \DateTime());
         $this->setAddDate(new \DateTime());
+        $this->setLastUpdate(new \DateTime());
     }
 
     /**
@@ -812,7 +821,7 @@ class Offer
      * Set isRead
      *
      * @param bool $isRead
-     * @return OfferReadStatus
+     * @return Offer
      */
     public function setIsRead($isRead)
     {
@@ -829,5 +838,28 @@ class Offer
     public function getIsRead()
     {
         return $this->isRead;
+    }
+
+    /**
+     * Set isPriceLastUpdated
+     *
+     * @param bool $isPriceLastUpdated
+     * @return Offer
+     */
+    public function setIsPriceLastUpdated($isPriceLastUpdated)
+    {
+        $this->isPriceLastUpdated = $isPriceLastUpdated;
+
+        return $this;
+    }
+
+    /**
+     * Get isPriceLastUpdated
+     *
+     * @return bool
+     */
+    public function getIsPriceLastUpdated()
+    {
+        return $this->isPriceLastUpdated;
     }
 }

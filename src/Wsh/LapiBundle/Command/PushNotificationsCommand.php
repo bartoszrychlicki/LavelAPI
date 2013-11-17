@@ -3,16 +3,22 @@
 namespace Wsh\LapiBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 use RMS\PushNotificationsBundle\Message\iOSMessage;
 
 class PushNotificationsCommand extends ContainerAwareCommand
 {
+    private $offerProvider;
+    private $output;
+    private $numberOfTry;
+    private $em;
+    private $notificationService;
+
     protected function configure()
     {
         $this->setName("wsh:lapi:notifications");
@@ -23,86 +29,222 @@ class PushNotificationsCommand extends ContainerAwareCommand
     {
         set_time_limit(0);
 
-        $numberOfSentNotifications = 0;
+        $numberOfOffersWithUpdatedPriceAll = 0;
+        $numberOfOffersWithUpdatedPricePage = 0;
+        $pagesWithError = 0;
 
-        $offerProvider = $this->getContainer()->get('wsh_lapi.provider.qtravel');
-        $notificationService = $this->getContainer()->get('rms_push_notifications');
+        $this->offerProvider = $this->getContainer()->get('wsh_lapi.provider.qtravel');
+        $this->output = $output;
+        $this->em = $this->getContainer()->get('doctrine')->getManager();
+        $this->notificationService = $this->getContainer()->get('rms_push_notifications');
+        $offerRepo = $this->em->getRepository('WshLapiBundle:Offer');
 
-        $em = $this->getContainer()->get('doctrine')->getManager();
+        $dateDoUpdateFrom = new \DateTime('today');
+        $dateDoUpdateFrom = $dateDoUpdateFrom->format("Y-m-d");
 
-        $userRepo = $em->getRepository('WshLapiBundle:User');
-
-        $users = $userRepo->findAll();
-
-        foreach ($users as $user) {
-            if($user->getApplePushToken() != null) {
-                $numberOfUpdatedOffers = 0;
-                $numberOfUpdatedAlerts = 0;
-                $alerts = $user->getAlerts();
+        $queryParameters = (object) array(
+            'empty_q' => 't',
+            'f_adate_min' => $dateDoUpdateFrom,
+            'page' => 1
+        );
 
 
-                if ($alerts) {
-                    foreach ($alerts as $alert) {
+        $json = $this->fetchPage($queryParameters);
 
-                        try {
-                            $queryParameters = $alert->getSearchQueryParams();
-                            $lastNotificationDate = $alert->getLastNotificationDate();
-                            $queryParameters->f_adate_min = $lastNotificationDate->format("Y-m-d");
-                            $response = $offerProvider->findOffersByParams($queryParameters);
-                        } catch(\Exception $e) {
-                            $output->writeln(sprintf('<fg=red>An error occurs while trying to send notification'
-                            .'for user with id %s</fg=red>.', $user->getId())); //TEMP
-                            goto end;
-                        }
+        if ($json === false) {
+            $this->output->writeln(sprintf("<error>---[ERROR]-Nastapil blad przy dziesieciokrotnej probie pobrania pierwszej strony. "
+                ."Operacja zostanie przerwana.</error>"));
+            die();
+        }
 
-                        $json = json_decode($response);
+        $numOfOffers = $json->p->p_offers;
+        $numOfPages = $json->p->p_pages;
+        $numOfPages = 10;
+        $estimatedTimeSec = $numOfPages * 6;
 
-                        if (is_object($json)) {
-                            $numOfOffers = $json->p->p_offers;
-                            $numOfPages = $json->p->p_pages;
-                            $alert->setNumberOfPagesInUpdate($numOfPages);
-                            $alert->setPreviousNotificationDate($alert->getLastNotificationDate());
-                            $alert->setLastNotificationDate(new \DateTime());
+        $output->writeln("");
+        $output->writeln(sprintf("Znaleziono <fg=green>%s</fg=green> zaktualizowanych ofert na "
+            ."<fg=green>%s</fg=green> stronach zaktualizowanych dnia <fg=red>%s</fg=red>. "
+            ."Szacowany czas pobierania i aktualizowania ofert: "
+            ."<fg=green>%s</fg=green> sec.", $numOfOffers, $numOfPages, $dateDoUpdateFrom, $estimatedTimeSec));
 
-                            if ($numOfOffers != 0) {
-                                $numberOfUpdatedAlerts++;
-                                $numberOfUpdatedOffers += $numOfOffers;
+        for ($page = 1; $page <= $numOfPages; $page++) {
+            $queryParameters->page = $page;
+            $offersFromProvider = $page == 1 ? $json : $this->fetchPage($queryParameters);
+            $estimatedTimeSec -= 6;
+
+            if ($offersFromProvider !== false) {
+                $output->writeln(sprintf("Strona <fg=green>%s</fg=green> pobrana bez bledow przy <fg=green>%s</fg=green> "
+                ."probie. Szacowany pozostaly czas: <fg=green>%s</fg=green> sec", $page, $offersFromProvider->try, $estimatedTimeSec));
+
+                $numberOfOffersWithUpdatedPricePage = 0;
+
+                foreach ($offersFromProvider->offers->o as $offer) {
+
+                    $offerCode = $offer->o_details->o_code;
+                    $offerFromDB = $offerRepo->findOneBy(array('id' => $offerCode));
+
+                    if ($offerFromDB) {
+                        if ($offerFromDB->getPrice() != $offer->o_details->o_bprice) {
+                            $numberOfOffersWithUpdatedPricePage++;
+                            $numberOfOffersWithUpdatedPriceAll++;
+                            foreach ($offerFromDB->getReadStatus() as $rds) {
+                                $rds->setIsRead(false);
+                                $this->em->persist($rds);
                             }
                         }
-                        $em->persist($alert);
                     }
                 }
 
-                if ($numberOfUpdatedAlerts != 0 && $numberOfUpdatedOffers != 0) {
-                    $notification = new iOSMessage();
-                    $notification->setDeviceIdentifier($user->getApplePushToken());
-                    if ($numberOfUpdatedOffers == 1) {
-                        $notification->setMessage(sprintf('There is %s updated offers for'
-                           .' %s of Yours alerts.', $numberOfUpdatedOffers, $numberOfUpdatedAlerts));
-                    } else {
-                        $notification->setMessage(sprintf('There are %s updated offers for'
-                            .'%s of Yours alerts.', $numberOfUpdatedOffers, $numberOfUpdatedAlerts));
-                    }
+                $offers = $this->offerProvider->handleOfferResponse($offersFromProvider);
 
-                    $notificationService->send($notification);
-                    $numberOfSentNotifications++;
+                foreach ($offers->getKeys() as $key) {
+                    if ($key > 100) {
+                        $this->em->persist($offers->get($key));
+                    }
                 }
 
+                $this->em->flush();
 
-                $output->writeln(sprintf('There is <fg=green>%s</fg=green> updated offers for <fg=green>%s</fg=green> of alerts'
-                    .' for user with id <fg=red>%s</fg=red>.',
-                    $numberOfUpdatedOffers, $numberOfUpdatedAlerts, $user->getId())); // TEMP
+                $output->writeln(sprintf("Ilosc ofert z zaktualizowana cena na %s stronie: "
+                    ."<fg=green>%s</fg=green>, wszystkich: <fg=green>%s</fg=green>", $page,
+                    $numberOfOffersWithUpdatedPricePage, $numberOfOffersWithUpdatedPriceAll));
 
-                end:
             } else {
-                $output->writeln(sprintf('<fg=red>For user with id %s push notifications token is not set'
-                    .'</fg=red>.', $user->getId())); //TEMP
+                $pagesWithError++;
+            }
+
+        }
+
+        $this->recalculateAlerts();
+        $this->sendNotifications();
+
+    }
+
+    private function fetchPage($queryParams)
+    {
+        $json = null;
+        $sucess = true;
+        $try = 0;
+        $maxTry = ($queryParams->page == 1) ? 10 : 3;
+
+        for ($i = 1; $i <= $maxTry; $i++) {
+            try {
+                $try++;
+                $response = $this->offerProvider->findOffersByParams($queryParams);
+
+                if (!$response || empty($response)) {
+                    throw new \Exception();
+                }
+
+                $json = json_decode($response);
+
+                if (!$json || !is_object($json) || empty($json) || !($json->offers->o) || count($json->offers->o) <= 0) {
+                    throw new \Exception();
+                } else {
+                    goto end;
+                }
+
+            } catch (\Exception $e) {
+                $numEnd = null;
+                $again = ($i == $maxTry) ? null : "Ponawianie proby.";
+                $sucess = ($i == $maxTry) ? false : true;
+                $this->output->writeln(sprintf("<error>---[ERROR]-Nastapil blad podczas pobierania %s strony po raz %s. %s</error>",
+                    $queryParams->page, $i, $again));
             }
         }
 
-        $em->flush();
+        if (!$sucess) {
+            if ($queryParams->page !== 1) {
+                $this->output->writeln(sprintf("<error>---[ERROR]-Nastapily bledy przy %s-krotnej probie pobrania %s strony. "
+                    ."Strona zostanie pominieta.</error>", $maxTry, $queryParams->page));
+            }
 
-        $output->writeln(sprintf('<fg=green>%s</fg=green> notifications were sent.', $numberOfSentNotifications)); /* TEMP */
+            return false;
+        }
 
+        end:
+        $json->try = $try;
+        return $json;
+    }
+
+    private function recalculateAlerts()
+    {
+        $alertRepo = $this->em->getRepository('WshLapiBundle:Alert');
+        $alerts = $alertRepo->findAll();
+
+
+
+        if ($alerts) {
+            foreach ($alerts as $alert) {
+                $offersUpdated = 0;
+                $offersReaded = 0;
+                $offersUnreaded = 0;
+                if ($alert->getOffers() || sizeof($alert->getOffers()) > 0) {
+                    foreach ($alert->getOffers() as $offer) {
+                        if ($offer->getReadStatus() || sizeof($offer->getReadStatus()) > 0) {
+                            foreach ($offer->getReadStatus() as $rds) {
+                                if ($rds->getAlertId()->getId() == $alert->getId()) {
+                                    if ($rds->getIsRead() == true) {
+                                        $offersReaded++;
+                                    } elseif ($rds->getIsread() == false && $offer->getIsPriceLastUpdated() == true) {
+                                        $offersUnreaded++;
+                                        $offersUpdated++;
+                                    } elseif ($rds->getIsread() == false && $offer->getIsPriceLastUpdated() == false) {
+                                        $offersUnreaded++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    $alert->setOffersRead($offersReaded);
+                    $alert->setOffersWithUpdatedPrice($offersUpdated);
+                    $alert->setOffersUnread($alert->getOffersTotal() - $offersReaded);
+                    $this->em->persist($alert);
+                }
+            }
+        }
+
+        $this->em->flush();
+
+    }
+
+    private function sendNotifications()
+    {
+        $userRepo = $this->em->getRepository('WshLapiBundle:User');
+        $users = $userRepo->findAll();
+
+        $numbrOfSentNotif = 0;
+
+        foreach ($users as $user) {
+            if ($user->getApplePushToken() !== null) {
+                $numberOfOffersWithupdatedPrice = 0;
+                $alerts = $user->getAlerts();
+
+                foreach ($alerts as $alert) {
+                    $numberOfOffersWithupdatedPrice += $alert->getOffersWithUpdatedPrice();
+                }
+
+                if ($numberOfOffersWithupdatedPrice > 0) {
+
+                    $notification = new iOSMessage();
+                    $notification->setDeviceIdentifier($user->getApplePushToken());
+
+                    if ($numberOfOffersWithupdatedPrice == 1) {
+                        $notification->setMessage(sprintf("W jednej ofercie pasującej do Twoich alertów została zaktualizowana cena. "
+                        , $numberOfOffersWithupdatedPrice));
+                    } else if ($numberOfOffersWithupdatedPrice > 1) {
+                        $notification->setMessage(sprintf("W %s ofertach pasujących do Twoich alertów została zaktualizowana cena. "
+                        , $numberOfOffersWithupdatedPrice));
+                    }
+
+                    $this->notificationService->send($notification);
+                    $numbrOfSentNotif++;
+                }
+            }
+        }
+
+        $this->output->writeln(sprintf("Zostalo wyslanych %s powiadomien.", $numbrOfSentNotif));
     }
 }
