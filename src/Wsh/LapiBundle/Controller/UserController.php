@@ -248,4 +248,26 @@ class UserController extends Controller
 
         return "Notification sent";
     }
+
+    public function sendTestNotificationWithPushToken($pushToken, $notificationParams)
+    {
+        $notificationService = $this->container->get('rms_push_notifications');
+        $notification = new iOSMessage();
+        $notification->setDeviceIdentifier($pushToken);
+
+        foreach ($notificationParams as $key => $value) {
+            $methodName = 'set'.ucfirst($key);
+            if(method_exists($notification, $methodName)) {
+                $notification->$methodName($value);
+            }
+        }
+
+        try {
+            $notificationService->send($notification);
+        } catch (\RuntimeException $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+        return "Notification sent";
+    }
 }

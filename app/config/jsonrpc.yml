@@ -57,3 +57,6 @@ wa72_json_rpc:
         send_test_notification:
             service: "wsh_lapi.users"
             method: "sendTestNotification"
+        send_test_notification_with_pushtoken:
+            service: "wsh_lapi.users"
+            method: "sendTestNotificationWithPushToken"
