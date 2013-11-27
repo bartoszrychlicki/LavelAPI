@@ -106,6 +106,6 @@ services:
 
 rms_push_notifications:
     ios:
-        sandbox: false
+        sandbox: true
         pem: ./config/ck.pem
         passphrase: TravelAlert123
