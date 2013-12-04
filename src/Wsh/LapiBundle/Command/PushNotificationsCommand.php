@@ -39,12 +39,12 @@ class PushNotificationsCommand extends ContainerAwareCommand
         $this->notificationService = $this->getContainer()->get('rms_push_notifications');
         $offerRepo = $this->em->getRepository('WshLapiBundle:Offer');
 
-        $dateDoUpdateFrom = new \DateTime('today');
-        $dateDoUpdateFrom = $dateDoUpdateFrom->format("Y-m-d");
+        $dateToUpdateFrom = new \DateTime('today');
+        $dateToUpdateFrom = $dateToUpdateFrom->format("Y-m-d");
 
         $queryParameters = (object) array(
             'empty_q' => 't',
-            'f_adate_min' => $dateDoUpdateFrom,
+            'f_adate_min' => $dateToUpdateFrom,
             'page' => 1
         );
 
@@ -59,18 +59,20 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
         $numOfOffers = $json->p->p_offers;
         $numOfPages = $json->p->p_pages;
+        $time = ceil($json->time);
         $estimatedTimeSec = $numOfPages * 6;
 
         $output->writeln("");
         $output->writeln(sprintf("Znaleziono <fg=green>%s</fg=green> zaktualizowanych ofert na "
             ."<fg=green>%s</fg=green> stronach zaktualizowanych dnia <fg=red>%s</fg=red>. "
+            ."Czas pobierania pierwszej strony: <fg=green>%s</fg=green>. "
             ."Szacowany czas pobierania i aktualizowania ofert: "
-            ."<fg=green>%s</fg=green> sec.", $numOfOffers, $numOfPages, $dateDoUpdateFrom, $estimatedTimeSec));
+            ."<fg=green>%s</fg=green> sec.", $numOfOffers, $numOfPages, $dateToUpdateFrom, $time, $estimatedTimeSec));
 
         for ($page = 1; $page <= $numOfPages; $page++) {
             $queryParameters->page = $page;
             $offersFromProvider = $page == 1 ? $json : $this->fetchPage($queryParameters);
-            $estimatedTimeSec -= 6;
+            $estimatedTimeSec -= $time;
 
             if ($offersFromProvider !== false) {
                 $output->writeln(sprintf("Strona <fg=green>%s</fg=green> pobrana bez bledow przy <fg=green>%s</fg=green> "
@@ -127,11 +129,16 @@ class PushNotificationsCommand extends ContainerAwareCommand
         $sucess = true;
         $try = 0;
         $maxTry = ($queryParams->page == 1) ? 10 : 3;
+        $timeStart = 0;
+        $timeStop = 0;
 
         for ($i = 1; $i <= $maxTry; $i++) {
             try {
                 $try++;
+
+                if ($queryParams->page == 1) { $timeStart = $this->getmicrotime();}
                 $response = $this->offerProvider->findOffersByParams($queryParams);
+                if ($queryParams->page == 1) { $timeStop = $this->getmicrotime();}
 
                 if (!$response || empty($response)) {
                     throw new \Exception();
@@ -164,6 +171,12 @@ class PushNotificationsCommand extends ContainerAwareCommand
         }
 
         end:
+
+
+        if ($queryParams->page == 1) {
+            $json->time = $timeStop - $timeStart;
+        }
+
         $json->try = $try;
         return $json;
     }
@@ -215,7 +228,7 @@ class PushNotificationsCommand extends ContainerAwareCommand
         $userRepo = $this->em->getRepository('WshLapiBundle:User');
         $users = $userRepo->findAll();
 
-        $numbrOfSentNotif = 0;
+        $numberOfSentNotif = 0;
 
         foreach ($users as $user) {
             if ($user->getApplePushToken() !== null) {
@@ -240,12 +253,12 @@ class PushNotificationsCommand extends ContainerAwareCommand
                     }
 
                     $this->notificationService->send($notification);
-                    $numbrOfSentNotif++;
+                    $numberOfSentNotif++;
                 }
             }
         }
 
-        $this->output->writeln(sprintf("Zostalo wyslanych %s powiadomien.", $numbrOfSentNotif));
+        $this->output->writeln(sprintf("Zostalo wyslanych %s powiadomien.", $numberOfSentNotif));
     }
 
     private function resetAlertsUpdatedOffers()
@@ -260,5 +273,11 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
         $this->em->flush();
 
+    }
+
+    private function getmicrotime()
+    {
+        $microtime = explode(' ', microtime());
+        return $microtime[1] . substr($microtime[0], 1);
     }
 }
