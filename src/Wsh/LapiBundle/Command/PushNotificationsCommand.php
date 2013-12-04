@@ -60,7 +60,7 @@ class PushNotificationsCommand extends ContainerAwareCommand
         $numOfOffers = $json->p->p_offers;
         $numOfPages = $json->p->p_pages;
         $time = ceil($json->time);
-        $estimatedTimeSec = $numOfPages * 6;
+        $estimatedTimeSec = $numOfPages * $time;
 
         $output->writeln("");
         $output->writeln(sprintf("Znaleziono <fg=green>%s</fg=green> zaktualizowanych ofert na "
