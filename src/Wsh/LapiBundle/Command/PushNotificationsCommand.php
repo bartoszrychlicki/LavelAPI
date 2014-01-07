@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Wsh\LapiBundle\Entity\OfferUpdate;
 
 use RMS\PushNotificationsBundle\Message\iOSMessage;
 
@@ -15,9 +16,22 @@ class PushNotificationsCommand extends ContainerAwareCommand
 {
     private $offerProvider;
     private $output;
-    private $numberOfTry;
     private $em;
     private $notificationService;
+
+    private $allOffersInDB;
+    private $pagesToFetch;
+    private $offerCount;
+
+    private $skippedPages;
+    private $pagesWithoutErrors;
+    private $pagesWithErrors;
+
+    private $offerUpdateEntity;
+
+    private $updatedOffers = 0;
+
+    const  OFFERS_ON_PAGE = 100;
 
     protected function configure()
     {
@@ -29,79 +43,87 @@ class PushNotificationsCommand extends ContainerAwareCommand
     {
         set_time_limit(0);
 
-        $numberOfOffersWithUpdatedPriceAll = 0;
-        $numberOfOffersWithUpdatedPricePage = 0;
         $pagesWithError = 0;
 
         $this->offerProvider = $this->getContainer()->get('wsh_lapi.provider.qtravel');
         $this->output = $output;
         $this->em = $this->getContainer()->get('doctrine')->getManager();
         $this->notificationService = $this->getContainer()->get('rms_push_notifications');
+        $this->pagesWithErrors = 0;
+        $this->pagesWithoutErrors = 0;
+        $this->skippedPages = 0;
         $offerRepo = $this->em->getRepository('WshLapiBundle:Offer');
 
-        $dateToUpdateFrom = new \DateTime('today');
-        $dateToUpdateFrom = $dateToUpdateFrom->format("Y-m-d");
+        $this->allOffersInDB = $offerRepo->findAll();
+        $this->offerCount = sizeof($this->allOffersInDB);
 
-        $queryParameters = (object) array(
-            'empty_q' => 't',
-            'f_adate_min' => $dateToUpdateFrom,
-            'page' => 1
-        );
-
-
-        $json = $this->fetchPage($queryParameters);
-
-        if ($json === false) {
-            $this->output->writeln(sprintf("<error>---[ERROR]-Nastapil blad przy dziesieciokrotnej probie pobrania pierwszej strony. "
-                ."Operacja zostanie przerwana.</error>"));
-            die();
-        }
-
-        $numOfOffers = $json->p->p_offers;
-        $numOfPages = $json->p->p_pages;
-        $time = ceil($json->time);
-        $estimatedTimeSec = $numOfPages * $time;
+        $this->pagesToFetch = ceil($this->offerCount / self::OFFERS_ON_PAGE);
 
         $output->writeln("");
-        $output->writeln(sprintf("Znaleziono <fg=green>%s</fg=green> zaktualizowanych ofert na "
-            ."<fg=green>%s</fg=green> stronach zaktualizowanych dnia <fg=red>%s</fg=red>. "
-            ."Czas pobierania pierwszej strony: <fg=green>%s</fg=green>. "
-            ."Szacowany czas pobierania i aktualizowania ofert: "
-            ."<fg=green>%s</fg=green> sec.", $numOfOffers, $numOfPages, $dateToUpdateFrom, $time, $estimatedTimeSec));
+        $output->writeln(sprintf("Ofert w bazie - <fg=green>%s</fg=green> \r\nStron do pobrania - <fg=green>%s</fg=green>",
+            $this->offerCount, $this->pagesToFetch ));
 
-        for ($page = 1; $page <= $numOfPages; $page++) {
+        $this->offerCount--;
+
+
+        $this->offerUpdateEntity = new OfferUpdate();
+        $this->offerUpdateEntity->setStartedAt(new \DateTime());
+        $this->offerUpdateEntity->setStatus('Fetching pages from provider');
+        $this->em->persist($this->offerUpdateEntity);
+        $this->em->flush();
+
+        $queryParameters = (object) array(
+            'empty_q' => 't'
+        );
+
+        for ($page = 1; $page <= $this->pagesToFetch; $page++) {
+
+
+            $offersIds = null;
+
+            $maxOfferId = ($page * self::OFFERS_ON_PAGE) - 1;
+            $minOfferId = $maxOfferId - (self::OFFERS_ON_PAGE) + 1;
+
+            for ($i = $minOfferId; $i <= $maxOfferId; $i++) {
+                if(array_key_exists($i, $this->allOffersInDB)) {
+                    $id = explode("-", $this->allOffersInDB[$i]->getId());
+                    $offersIds .= $id[1];
+
+                    $offersIds .= ($i != $this->offerCount && $i != $maxOfferId) ? ',' : '';
+                }
+            }
+
             $queryParameters->page = $page;
-            $offersFromProvider = $page == 1 ? $json : $this->fetchPage($queryParameters);
-            $estimatedTimeSec -= $time;
+            $queryParameters->f_oid = $offersIds;
+            $offersFromProvider = $this->fetchPage($queryParameters);
+
 
             if ($offersFromProvider !== false) {
                 $output->writeln(sprintf("Strona <fg=green>%s</fg=green> pobrana bez bledow przy <fg=green>%s</fg=green> "
-                ."probie. Szacowany pozostaly czas: <fg=green>%s</fg=green> sec", $page, $offersFromProvider->try, $estimatedTimeSec));
+                ."probie.", $page, $offersFromProvider->try));
 
                 $numberOfOffersWithUpdatedPricePage = 0;
 
                 foreach ($offersFromProvider->offers->o as $offer) {
 
-                    $offerCode = $offer->o_details->o_code;
-                    $offerFromDB = $offerRepo->findOneBy(array('id' => $offerCode));
+                    $offerCode = $offer->o_details->o_id;
+                    $offerFromDB = $offerRepo->findOfferWithIdLike($offerCode);
 
                     if ($offerFromDB) {
-                        if ($offerFromDB->getPrice() != $offer->o_details->o_bprice) {
+                        if ($offerFromDB->getPrice() != $offer->o_best->o_b_price) {
                             $numberOfOffersWithUpdatedPricePage++;
-                            $numberOfOffersWithUpdatedPriceAll++;
+                            $this->updatedOffers++;
+                            $offerFromDB->setIsPriceLastUpdated(true);
+                            $offerFromDB->setPrice($offer->o_best->o_b_price);
                             foreach ($offerFromDB->getReadStatus() as $rds) {
                                 $rds->setIsRead(false);
                                 $this->em->persist($rds);
                             }
+                        } else {
+                            $offerFromDB->setIsPriceLastUpdated(false);
                         }
-                    }
-                }
 
-                $offers = $this->offerProvider->handleOfferResponse($offersFromProvider);
-
-                foreach ($offers->getKeys() as $key) {
-                    if ($key > 100) {
-                        $this->em->persist($offers->get($key));
+                        $this->em->persist($offerFromDB);
                     }
                 }
 
@@ -109,7 +131,7 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
                 $output->writeln(sprintf("Ilosc ofert z zaktualizowana cena na %s stronie: "
                     ."<fg=green>%s</fg=green>, wszystkich: <fg=green>%s</fg=green>", $page,
-                    $numberOfOffersWithUpdatedPricePage, $numberOfOffersWithUpdatedPriceAll));
+                    $numberOfOffersWithUpdatedPricePage, $this->updatedOffers));
 
             } else {
                 $pagesWithError++;
@@ -126,19 +148,15 @@ class PushNotificationsCommand extends ContainerAwareCommand
     private function fetchPage($queryParams)
     {
         $json = null;
-        $sucess = true;
+        $success = true;
         $try = 0;
-        $maxTry = ($queryParams->page == 1) ? 10 : 3;
-        $timeStart = 0;
-        $timeStop = 0;
+        $maxTry =  10;
 
         for ($i = 1; $i <= $maxTry; $i++) {
             try {
                 $try++;
 
-                if ($queryParams->page == 1) { $timeStart = $this->getmicrotime();}
                 $response = $this->offerProvider->findOffersByParams($queryParams);
-                if ($queryParams->page == 1) { $timeStop = $this->getmicrotime();}
 
                 if (!$response || empty($response)) {
                     throw new \Exception();
@@ -155,29 +173,30 @@ class PushNotificationsCommand extends ContainerAwareCommand
             } catch (\Exception $e) {
                 $numEnd = null;
                 $again = ($i == $maxTry) ? null : "Ponawianie proby.";
-                $sucess = ($i == $maxTry) ? false : true;
+                $success = ($i == $maxTry) ? false : true;
                 $this->output->writeln(sprintf("<error>---[ERROR]-Nastapil blad podczas pobierania %s strony po raz %s. %s</error>",
                     $queryParams->page, $i, $again));
             }
         }
 
-        if (!$sucess) {
-            if ($queryParams->page !== 1) {
+        if (!$success) {
                 $this->output->writeln(sprintf("<error>---[ERROR]-Nastapily bledy przy %s-krotnej probie pobrania %s strony. "
                     ."Strona zostanie pominieta.</error>", $maxTry, $queryParams->page));
-            }
+                $this->skippedPages++;
 
             return false;
         }
 
         end:
 
+        $json->try = $try;
 
-        if ($queryParams->page == 1) {
-            $json->time = $timeStop - $timeStart;
+        if ($success && $try == 1) {
+            $this->pagesWithoutErrors++;
+        } else if($success && $try > 1) {
+            $this->pagesWithErrors++;
         }
 
-        $json->try = $try;
         return $json;
     }
 
@@ -185,8 +204,6 @@ class PushNotificationsCommand extends ContainerAwareCommand
     {
         $alertRepo = $this->em->getRepository('WshLapiBundle:Alert');
         $alerts = $alertRepo->findAll();
-
-
 
         if ($alerts) {
             foreach ($alerts as $alert) {
@@ -225,6 +242,11 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
     private function sendNotifications()
     {
+        $this->offerUpdateEntity->setUpdatedOffers($this->updatedOffers);
+        $this->offerUpdateEntity->setStatus('Sending notifications');
+        $this->em->persist($this->offerUpdateEntity);
+        $this->em->flush();
+
         $userRepo = $this->em->getRepository('WshLapiBundle:User');
         $users = $userRepo->findAll();
 
@@ -258,6 +280,12 @@ class PushNotificationsCommand extends ContainerAwareCommand
             }
         }
 
+        $this->offerUpdateEntity->setFinishedAt(new \DateTime());
+        $this->offerUpdateEntity->setStatus('Finished');
+        $this->offerUpdateEntity->setSentNotifications($numberOfSentNotif);
+        $this->em->persist($this->offerUpdateEntity);
+        $this->em->flush();
+
         $this->output->writeln(sprintf("Zostalo wyslanych %s powiadomien.", $numberOfSentNotif));
     }
 
@@ -273,11 +301,5 @@ class PushNotificationsCommand extends ContainerAwareCommand
 
         $this->em->flush();
 
-    }
-
-    private function getmicrotime()
-    {
-        $microtime = explode(' ', microtime());
-        return $microtime[1] . substr($microtime[0], 1);
     }
 }

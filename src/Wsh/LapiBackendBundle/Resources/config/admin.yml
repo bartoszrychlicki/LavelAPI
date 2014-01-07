@@ -30,3 +30,14 @@ services:
             - 'SonataAdminBundle:CRUD'
         calls:
             - [ setTranslationDomain, [SonataAdminBundle]]
+
+    sonata.admin.offerUpdate:
+        class: Wsh\LapiBackendBundle\Admin\OfferUpdateAdmin
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: offers, label: "OffersUpdates" }
+        arguments:
+            - ~
+            - Wsh\LapiBundle\Entity\OfferUpdate
+            - 'SonataAdminBundle:CRUD'
+        calls:
+            - [ setTranslationDomain, [SonataAdminBundle]]

@@ -1,0 +1,9 @@
+{% extends 'SonataAdminBundle:CRUD:base_list_field.html.twig' %}
+
+{% block field %}
+    {% if object.report %}
+        <a href="{{ path('report', {'name': object.report}) }}" target="_blank">Report</a>
+    {% else %}
+        -
+    {% endif %}
+{% endblock %}

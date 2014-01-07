@@ -12,4 +12,16 @@ use Doctrine\ORM\EntityRepository;
  */
 class OfferRepository extends EntityRepository
 {
+    public function findOfferWithIdLike($id) {
+        $qb = $this->_em->createQueryBuilder();
+
+        $query = $qb
+            ->select("o")
+            ->from('Wsh\LapiBundle\Entity\Offer', 'o')
+            ->where($qb->expr()->like("o.id", $qb->expr()->literal("%".$id."%")))
+            ->getQuery();
+
+        return $query->getSingleResult();
+
+    }
 }
