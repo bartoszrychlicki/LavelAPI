@@ -107,23 +107,26 @@ class PushNotificationsCommand extends ContainerAwareCommand
                 foreach ($offersFromProvider->offers->o as $offer) {
 
                     $offerCode = $offer->o_details->o_id;
-                    $offerFromDB = $offerRepo->findOfferWithIdLike($offerCode);
+                    $offerDB = $offerRepo->findOfferWithIdLike($offerCode);
 
-                    if ($offerFromDB) {
-                        if ($offerFromDB->getPrice() != $offer->o_best->o_b_price) {
-                            $numberOfOffersWithUpdatedPricePage++;
-                            $this->updatedOffers++;
-                            $offerFromDB->setIsPriceLastUpdated(true);
-                            $offerFromDB->setPrice($offer->o_best->o_b_price);
-                            foreach ($offerFromDB->getReadStatus() as $rds) {
-                                $rds->setIsRead(false);
-                                $this->em->persist($rds);
+                    foreach($offerDB as $offerFromDB) {
+
+                        if ($offerFromDB) {
+                            if ($offerFromDB->getPrice() != $offer->o_best->o_b_price) {
+                                $numberOfOffersWithUpdatedPricePage++;
+                                $this->updatedOffers++;
+                                $offerFromDB->setIsPriceLastUpdated(true);
+                                $offerFromDB->setPrice($offer->o_best->o_b_price);
+                                foreach ($offerFromDB->getReadStatus() as $rds) {
+                                    $rds->setIsRead(false);
+                                    $this->em->persist($rds);
+                                }
+                            } else {
+                                $offerFromDB->setIsPriceLastUpdated(false);
                             }
-                        } else {
-                            $offerFromDB->setIsPriceLastUpdated(false);
-                        }
 
-                        $this->em->persist($offerFromDB);
+                            $this->em->persist($offerFromDB);
+                        }
                     }
                 }
 
