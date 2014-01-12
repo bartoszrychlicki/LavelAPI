@@ -21,7 +21,7 @@ class OfferRepository extends EntityRepository
             ->where($qb->expr()->like("o.id", $qb->expr()->literal("%".$id."%")))
             ->getQuery();
 
-        return $query->getSingleResult();
+        return $query->getFirstResult();
 
     }
 }
