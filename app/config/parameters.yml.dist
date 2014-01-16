@@ -17,3 +17,4 @@ parameters:
     qtravelApiKey:     6d4f8c7e8c403cc815e20d79bdf018b0
     developerToken:    ThisTokenIsNotSoSecretChangeIt
     sent_sales_leads_to: bartosz.rychlicki@wenigersh.com
+    leads_cc:   br@quantumlab.co, magdalena.kulik@gmail.com
