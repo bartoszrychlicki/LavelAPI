@@ -43,6 +43,7 @@ class AlertController extends Controller
 
         $params = $searchParams;
         $params->page = 1;
+        $params->sort = "c";
 
         $provider = $this->container->get('wsh_lapi.provider.qtravel');
         $response = $provider->findOffersByParams($params);
@@ -113,6 +114,7 @@ class AlertController extends Controller
 
         $params = $newValues->searchQueryParams;
         $params->page = 1;
+        $params->sort = "c";
 
         $provider = $this->container->get('wsh_lapi.provider.qtravel');
         $response = $provider->findOffersByParams($params);
@@ -180,6 +182,7 @@ class AlertController extends Controller
         $maxPage = $alert->getNumberOfPages();
         $params = $alert->getSearchQueryParams();
         $params->page = $page;
+        $params->sort = "c";
 
         if($date) {
             $params->f_adate_min = $alert->getPreviousNotificationDate()->format('Y-m-d');
@@ -251,13 +254,15 @@ class AlertController extends Controller
                 $offerReadStatus = new OfferReadStatus();
                 $offerReadStatus->setAlertId($alert);
                 $offerReadStatus->setOfferId($offerFromProvider->get($key));
-                $offerReadStatus->setIsRead(false);
+                $offerReadStatus->setIsRead(true);
                 $offerReadStatus->setTempOfferId($offerFromProvider->get($key)->getId());
 
                 $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
-            } else if ($offerReadStatus && $date) {
-                $offerReadStatus->setIsRead(false);
-            }
+            } /*else if ($offerReadStatus && $key < 200) {
+                $offerFromProvider->get($key)->removeReadStatus($offerReadStatus);
+                $offerReadStatus->setIsRead(true);
+                $offerFromProvider->get($key)->addReadStatus($offerReadStatus);
+            }*/
 
             $offerToSerialize->add($offerFromProvider->get($key));
         }

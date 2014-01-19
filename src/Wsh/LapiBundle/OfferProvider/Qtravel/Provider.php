@@ -108,19 +108,21 @@ class Provider implements OfferProviderInterface
 
         $collection = new ArrayCollection();
         foreach($json->offers->o as $offer) {
-            $checkSum = md5(serialize($offer));
-            $offerDB = $offerRepo->findOneByQTravelOfferId($offer->o_details->o_code);
+            if (property_exists($offer, "o_details")) {
+                $checkSum = md5(serialize($offer));
+                $offerDB = $offerRepo->findOneByQTravelOfferId($offer->o_details->o_code);
 
-            if($offerDB){
-                if($offerDB->getCheckSum() != $checkSum){
-                    $collection->set(200 + $i, $this->transformToEntity($offer, $offerDB));
+                if($offerDB){
+                    if($offerDB->getCheckSum() != $checkSum){
+                        $collection->set(200 + $i, $this->transformToEntity($offer, $offerDB));
+                    } else {
+                        $collection->set(100 + $i, $offerDB);
+                    }
                 } else {
-                    $collection->set(100 + $i, $offerDB);
+                    $collection->set($i, $this->transformToEntity($offer));
                 }
-            } else {
-                $collection->set($i, $this->transformToEntity($offer));
+                $i++;
             }
-            $i++;
         }
         $this->doctrine->flush();
 

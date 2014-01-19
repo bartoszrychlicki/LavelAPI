@@ -277,6 +277,8 @@ class PushNotificationsCommand extends ContainerAwareCommand
                         , $numberOfOffersWithupdatedPrice));
                     }
 
+                    $notification->setAPSBadge($numberOfOffersWithupdatedPrice);
+
                     $this->notificationService->send($notification);
                     $numberOfSentNotif++;
                 }
