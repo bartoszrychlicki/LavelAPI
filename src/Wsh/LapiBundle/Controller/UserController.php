@@ -170,10 +170,14 @@ class UserController extends Controller
 
         // todo: now send the lead to qtravel e-mail
         $address = $this->container->getParameter('sent_sales_leads_to');
+        $cc = $this->container->getParameter('leads_cc');
+        $ccArr = explode(',', $cc);
+
         $message  = \Swift_Message::newInstance()
             ->setSubject('Travel Alert Sales Lead')
             ->setTo($address)
             ->setFrom($this->container->getParameter('mailer_user'))
+            ->setCc($ccArr)
             ->setBody(
                 $this->renderView(
                     'WshLapiBundle:Emails:sent_sales_lead.txt.twig',
