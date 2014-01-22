@@ -50,8 +50,8 @@ class AlertController extends Controller
         $json = json_decode($response);
         $alert->setNumberOfPages($json->p->p_pages);
         $alert->setOffersTotal($json->p->p_offers);
-        $alert->setOffersUnread($json->p->p_offers);
-        $alert->setOffersRead(0);
+        $alert->setOffersUnread(0);
+        $alert->setOffersRead($json->p->p_offers);
 
         $em->persist($alert);
         $em->flush();
@@ -121,8 +121,8 @@ class AlertController extends Controller
         $json = json_decode($response);
         $alert->setNumberOfPages($json->p->p_pages);
         $alert->setOffersTotal($json->p->p_offers);
-        $alert->setOffersUnread($json->p->p_offers);
-        $alert->setOffersRead(0);
+        $alert->setOffersUnread(0);
+        $alert->setOffersRead($json->p->p_offers);
 
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
