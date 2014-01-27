@@ -414,21 +414,24 @@ class AlertController extends Controller
 
         $offerReadStatusRepo = $em->getRepository('WshLapiBundle:OfferReadStatus');
 
-        $offer = $offerReadStatusRepo->findOneBy(array(
+        $ors = $offerReadStatusRepo->findOneBy(array(
             "offer_id" => $offerId,
             "alert_id" => $alertId,
         ));
 
-        if(!$offer) {
+        if(!$ors) {
             throw new \Exception("In given alert(".$alertId."), offer with id ".$offerId." was not found.");
         }
 
-        $offer->setIsRead(true);
-        $alert->setOffersRead($alert->getOffersRead() + 1);
-        $alert->setOffersUnread($alert->getOffersUnread() + 1);
-        $em->persist($offer);
-        $em->persist($alert);
-        $em->flush();
+
+        if (!$ors->getIsRead()) {
+            $ors->setIsRead(true);
+            $alert->setOffersRead($alert->getOffersRead() + 1);
+            $alert->setOffersUnread($alert->getOffersUnread() - 1);
+            $em->persist($ors);
+            $em->persist($alert);
+            $em->flush();
+        }
 
         return 'Status changed';
     }

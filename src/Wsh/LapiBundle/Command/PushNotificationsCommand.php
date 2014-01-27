@@ -143,7 +143,11 @@ class PushNotificationsCommand extends ContainerAwareCommand
         }
 
         $this->recalculateAlerts();
-        $this->sendNotifications();
+
+        if ($this->updatedOffers != 0) {
+            $this->sendNotifications();
+        }
+
         $this->resetAlertsUpdatedOffers();
 
     }
