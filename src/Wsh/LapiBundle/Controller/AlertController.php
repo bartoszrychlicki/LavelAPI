@@ -355,6 +355,7 @@ class AlertController extends Controller
 
                 $alertORS[$alert->getId()] = array(
                     "offersRead" => 0,
+                    "totalOffersInDb" => count($alert->getOffers())
                 );
 
                 if(count($alert->getOffers()) != 0) {
@@ -372,8 +373,7 @@ class AlertController extends Controller
                         }
                     }
                 }
-
-                $alert->setOffersRead($alertORS[$alert->getId()]['offersRead']);
+                $alert->setOffersRead($alert->getOffersTotal() - ($alertORS[$alert->getId()]['totalOffersInDb'] - $alertORS[$alert->getId()]['offersRead']));
                 $alert->setOffersUnread($alert->getOffersTotal() - $alert->getOffersRead());
                 $em->persist($alert);
 
