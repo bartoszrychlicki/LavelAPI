@@ -154,7 +154,7 @@ class Provider implements OfferProviderInterface
         }
 
 		
-		if (empty($offer->o_details->o_bprice) || $offer->o_details->o_bprice instanceof stdClass) {
+		if (empty($offer->o_details->o_bprice) || is_object($offer->o_details->o_bprice)) {
 			$offerEnt->setPrice(0);
 		} else {
         	$offerEnt->setPrice($offer->o_details->o_bprice);
