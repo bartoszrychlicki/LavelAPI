@@ -151,7 +151,7 @@ class Provider implements OfferProviderInterface
             $offerEnt->setLeadPhoto($offer->o_photos->o_photo_link[0]);
         }
 
-        if (empty($offer->o_details->o_bprice) || $offer->o_details->o_bprice instanceof stdClass) {
+        if (empty($offer->o_details->o_bprice) || is_object($offer->o_details->o_bprice)) {
 			$offerEnt->setPrice(0);
 		} else {
         	$offerEnt->setPrice($offer->o_details->o_bprice);
