@@ -153,7 +153,13 @@ class Provider implements OfferProviderInterface
             $offerEnt->setLeadPhoto($offer->o_photos->o_photo_link[0]);
         }
 
-        $offerEnt->setPrice($offer->o_details->o_bprice);
+		
+		if (empty($offer->o_details->o_bprice) || $offer->o_details->o_bprice instanceof stdClass) {
+			$offerEnt->setPrice(0);
+		} else {
+        	$offerEnt->setPrice($offer->o_details->o_bprice);
+		}
+		
         $offerEnt->setQTravelOfferId($offer->o_details->o_code);
 
         if($offerDB == null) {
